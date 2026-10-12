@@ -1,7 +1,7 @@
 {
   "name": "spl-chat",
   "displayName": "SPL Chat",
-  "description": "A cell-based SPL/1.0 chat client powered by GitHub Copilot language models.",
+  "description": "A cell-based SPL/2 chat client powered by GitHub Copilot language models.",
   
   "version": "0.0.1",
   "publisher": "the-syntax",
@@ -10,7 +10,7 @@
     "url": "https://github.com/dgawlik/the-syntax.git"
   },
   "engines": {
-    "vscode": "^1.95.0"
+    "vscode": "^1.140.0"
   },
   "categories": [
     "Chat"

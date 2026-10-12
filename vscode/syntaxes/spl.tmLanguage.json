@@ -45,7 +45,7 @@
       "patterns": [
         {
           "name": "keyword.control.spl",
-          "match": "@SPL/[0-9]+\\.[0-9]+"
+          "match": "@SPL/2"
         }
       ]
     },
@@ -71,11 +71,11 @@
     },
     "directive": {
       "name": "keyword.control.spl",
-      "match": "\\b(?:use|ctx|ctl|grp|when|if|else|assert|exp|data)\\b"
+      "match": "\\b(?:u|c|g|w|if|else|a|data)\\b"
     },
     "verb": {
       "name": "entity.name.function.spl",
-      "match": "\\b(?:gen|xform|analyze|extract|classify|validate|do)\\b"
+      "match": "\\b(?:G|X|A|E|C|V|D|T)\\b"
     },
     "type": {
       "name": "support.type.spl",
@@ -87,7 +87,7 @@
     },
     "field": {
       "name": "variable.other.property.spl",
-      "match": "\\b(?:t|in|m|out|q|src|st|res|tr|err|ask|fmt|sch|lang|aud|len|trace|reply)\\b(?=\\s*:)"
+      "match": "\\b(?:t|i|m|o|q|s|n|w|r|tr|tl|er|ask|fmt|sch|lang|aud|len|trace|summary|assumptions|uncertainties)\\b(?=\\s*:)"
     },
     "variable": {
       "name": "variable.other.readwrite.spl",
@@ -99,7 +99,7 @@
     },
     "operator": {
       "name": "keyword.operator.spl",
-      "match": ":=|&&|\\|\\||==|!=|<=|>=|[!<>=~]"
+      "match": "&&|\\|\\||==|!=|<=|>=|[!<>=~]"
     }
   }
 }
