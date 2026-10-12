@@ -1,0 +1,56 @@
+{
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "name": "Semantic Prompt Language",
+  "scopeName": "source.spl",
+  "patterns": [
+    {
+      "include": "#request"
+    },
+    {
+      "include": "#string"
+    },
+    {
+      "include": "#fence"
+    },
+    {
+      "include": "#number"
+    },
+    {
+      "include": "#keyword"
+    }
+  ],
+  "repository": {
+    "request": {
+      "patterns": [
+        {
+          "name": "keyword.control.spl",
+          "match": "@SPL/[0-9]+\\.[0-9]+"
+        }
+      ]
+    },
+    "string": {
+      "name": "string.quoted.double.spl",
+      "begin": "\"",
+      "end": "\"",
+      "patterns": [
+        {
+          "name": "constant.character.escape.spl",
+          "match": "\\\\."
+        }
+      ]
+    },
+    "fence": {
+      "name": "string.unquoted.fenced.spl",
+      "begin": "data`{3,}|`{3,}",
+      "end": "`{3,}"
+    },
+    "number": {
+      "name": "constant.numeric.spl",
+      "match": "\\b(?:0|[1-9][0-9]*)(?:\\.[0-9]+)?\\b"
+    },
+    "keyword": {
+      "name": "keyword.control.spl",
+      "match": "\\b(?:use|ctx|ctl|grp|when|if|else|assert|exp|gen|xform|analyze|extract|classify|validate|do|st|res|tr|err|ask|ok|clarify|conflict|invalid|refuse|has|empty|type|quality|in|true|false|null|data)\\b"
+    }
+  }
+}

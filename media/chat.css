@@ -1,0 +1,136 @@
+:root {
+  color: var(--vscode-foreground);
+  font-family: var(--vscode-font-family);
+}
+
+body {
+  margin: 0;
+  background: var(--vscode-editor-background);
+}
+
+main {
+  box-sizing: border-box;
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+header,
+.actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+h1 {
+  margin: 0;
+  font-size: 1.3rem;
+}
+
+header p {
+  margin: 4px 0 20px;
+  color: var(--vscode-descriptionForeground);
+}
+
+#cells {
+  display: grid;
+  gap: 14px;
+  min-height: 120px;
+  margin-bottom: 20px;
+}
+
+.cell {
+  overflow: hidden;
+  border: 1px solid var(--vscode-panel-border);
+  border-radius: 6px;
+  background: var(--vscode-textCodeBlock-background);
+}
+
+.cell-header {
+  display: flex;
+  justify-content: space-between;
+  padding: 7px 10px;
+  color: var(--vscode-editor-background);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.cell.user .cell-header {
+  background: var(--vscode-button-background);
+}
+
+.cell.assistant .cell-header {
+  background: var(--vscode-terminal-ansiMagenta);
+}
+
+.cell pre {
+  margin: 0;
+  padding: 14px;
+  overflow-x: auto;
+  white-space: pre-wrap;
+  tab-size: 2;
+  font-family: var(--vscode-editor-font-family);
+  font-size: var(--vscode-editor-font-size);
+  line-height: 1.5;
+}
+
+form {
+  display: grid;
+  gap: 8px;
+}
+
+label {
+  font-weight: 700;
+}
+
+textarea {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 180px;
+  resize: vertical;
+  padding: 12px;
+  border: 1px solid var(--vscode-input-border);
+  color: var(--vscode-input-foreground);
+  background: var(--vscode-input-background);
+  font-family: var(--vscode-editor-font-family);
+  font-size: var(--vscode-editor-font-size);
+  line-height: 1.5;
+}
+
+button {
+  padding: 7px 12px;
+  border: 0;
+  color: var(--vscode-button-foreground);
+  background: var(--vscode-button-background);
+  cursor: pointer;
+}
+
+button:hover {
+  background: var(--vscode-button-hoverBackground);
+}
+
+button.secondary {
+  color: var(--vscode-button-secondaryForeground);
+  background: var(--vscode-button-secondaryBackground);
+}
+
+button:disabled {
+  cursor: default;
+  opacity: 0.6;
+}
+
+#status {
+  color: var(--vscode-descriptionForeground);
+  font-size: 0.9rem;
+}
+
+.token-keyword { color: var(--vscode-symbolIcon-keywordForeground); }
+.token-string { color: var(--vscode-debugTokenExpression-string); }
+.token-number { color: var(--vscode-debugTokenExpression-number); }
+.token-operator { color: var(--vscode-symbolIcon-operatorForeground); }
+.token-name { color: var(--vscode-symbolIcon-variableForeground); }
+.token-fence { color: var(--vscode-debugTokenExpression-value); }
+.token-error { color: var(--vscode-errorForeground); }
