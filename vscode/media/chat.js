@@ -39,12 +39,15 @@ window.addEventListener("message", event => {
       }
       break;
     case "assistantEnd":
+      if (streamingCell) {
+        renderCell(streamingCell.element, streamingCell.content, true);
+      }
       streamingCell = undefined;
       break;
     case "assistantError":
       if (streamingCell) {
         streamingCell.content = `@SPL/1.0{\n  st:invalid;\n  err:[{code:"copilot_request_failed",msg:${quote(message.message)}}];\n}`;
-        renderCell(streamingCell.element, streamingCell.content);
+        renderCell(streamingCell.element, streamingCell.content, true);
       }
       streamingCell = undefined;
       break;
@@ -68,13 +71,28 @@ function appendCell(role, content) {
   element.className = `cell ${role}`;
   element.innerHTML = `<div class="cell-header"><span>${role === "user" ? "User" : "Copilot"}</span><span>SPL/1.0</span></div><pre></pre>`;
   cells.append(element);
-  renderCell(element, content);
+  renderCell(element, content, role === "user");
   element.scrollIntoView({ behavior: "smooth", block: "end" });
   return { element, content };
 }
 
-function renderCell(element, content) {
-  element.querySelector("pre").innerHTML = highlightSpl(formatSpl(content));
+function renderCell(element, content, complete = false) {
+  const formatted = formatSpl(content);
+  element.querySelector("pre").innerHTML = highlightSpl(unwrapCell(formatted, complete));
+}
+
+function unwrapCell(content, complete) {
+  const prefix = "@SPL/1.0{";
+  if (!content.startsWith(prefix)) {
+    return content;
+  }
+
+  let body = content.slice(prefix.length).replace(/^\s*\n?/, "");
+  if (complete && body.endsWith("}")) {
+    body = body.slice(0, -1).replace(/\s*$/, "");
+  }
+
+  return body;
 }
 
 function setBusy(busy, label) {
@@ -152,13 +170,18 @@ function formatSpl(source) {
 
 function highlightSpl(source) {
   const escaped = escapeHtml(source);
-  const tokenPattern = /("(?:\\.|[^"\\])*")|(@SPL\/\d+\.\d+)|(\b(?:use|ctx|ctl|grp|when|if|else|assert|exp|gen|xform|analyze|extract|classify|validate|do|st|res|tr|err|ask|ok|clarify|conflict|invalid|refuse|has|empty|type|quality|in|true|false|null|data)\b)|(\$[A-Za-z_][A-Za-z0-9_]*)|(\b\d+(?:\.\d+)?\b)|(&&|\|\||:=|==|!=|<=|>=|[!<>=~])/g;
+  const tokenPattern = /("(?:\\.|[^"\\])*")|(@SPL\/\d+\.\d+)|(\b(?:use|ctx|ctl|grp|when|if|else|assert|exp|data)\b)|(\b(?:gen|xform|analyze|extract|classify|validate|do)\b)|(\b(?:str|int|num|bool|enum|list|obj)\b)|(\b(?:ok|clarify|conflict|invalid|refuse)\b)|(\b(?:t|in|m|out|q|src|st|res|tr|err|ask|fmt|sch|lang|aud|len|trace|reply)\b)(?=\s*:)|(\$[A-Za-z_][A-Za-z0-9_]*)|(\b(?:true|false|null)\b)|(\b\d+(?:\.\d+)?\b)|(&&|\|\||:=|==|!=|<=|>=|[!<>=~])/g;
 
-  return escaped.replace(tokenPattern, (token, string, request, keyword, name, number, operator) => {
+  return escaped.replace(tokenPattern, (token, string, request, directive, verb, type, state, field, name, literal, number, operator) => {
     if (string) return `<span class="token-string">${token}</span>`;
-    if (request) return `<span class="token-keyword">${token}</span>`;
-    if (keyword) return `<span class="token-keyword">${token}</span>`;
+    if (request) return `<span class="token-request">${token}</span>`;
+    if (directive) return `<span class="token-directive">${token}</span>`;
+    if (verb) return `<span class="token-verb">${token}</span>`;
+    if (type) return `<span class="token-type">${token}</span>`;
+    if (state) return `<span class="token-status">${token}</span>`;
+    if (field) return `<span class="token-field">${token}</span>`;
     if (name) return `<span class="token-name">${token}</span>`;
+    if (literal) return `<span class="token-literal">${token}</span>`;
     if (number) return `<span class="token-number">${token}</span>`;
     if (operator) return `<span class="token-operator">${token}</span>`;
     return token;

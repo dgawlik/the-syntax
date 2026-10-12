@@ -1,0 +1,9 @@
+.vscode/**
+src/**
+node_modules/**
+SPL.md
+SPL-examples.md
+tsconfig.json
+.gitignore
+*.vsix
+out/**/*.map

@@ -1,6 +1,6 @@
 # SPL Chat for VS Code
 
-SPL Chat is a VS Code extension that sends strict [SPL/1.0](SPL.md) requests to a GitHub Copilot language model. It renders every user and model turn as a separate, syntax-highlighted, pretty-formatted cell.
+SPL Chat is a VS Code extension that sends strict [SPL/1.0](../SPL.md) requests to a GitHub Copilot language model. It renders every user and model turn as a separate, syntax-highlighted, pretty-formatted cell.
 
 ## Requirements
 

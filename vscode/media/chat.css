@@ -127,10 +127,15 @@ button:disabled {
   font-size: 0.9rem;
 }
 
-.token-keyword { color: var(--vscode-symbolIcon-keywordForeground); }
+.token-request { color: var(--vscode-symbolIcon-keywordForeground); font-weight: 700; }
+.token-directive { color: var(--vscode-symbolIcon-keywordForeground); }
+.token-verb { color: var(--vscode-symbolIcon-functionForeground); }
+.token-type { color: var(--vscode-symbolIcon-classForeground); }
+.token-status { color: var(--vscode-testing-iconPassed); }
+.token-field { color: var(--vscode-symbolIcon-propertyForeground); }
 .token-string { color: var(--vscode-debugTokenExpression-string); }
 .token-number { color: var(--vscode-debugTokenExpression-number); }
+.token-literal { color: var(--vscode-debugTokenExpression-value); }
 .token-operator { color: var(--vscode-symbolIcon-operatorForeground); }
 .token-name { color: var(--vscode-symbolIcon-variableForeground); }
-.token-fence { color: var(--vscode-debugTokenExpression-value); }
 .token-error { color: var(--vscode-errorForeground); }

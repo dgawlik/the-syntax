@@ -1,0 +1,105 @@
+{
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "name": "Semantic Prompt Language",
+  "scopeName": "source.spl",
+  "patterns": [
+    {
+      "include": "#request"
+    },
+    {
+      "include": "#string"
+    },
+    {
+      "include": "#fence"
+    },
+    {
+      "include": "#number"
+    },
+    {
+      "include": "#directive"
+    },
+    {
+      "include": "#verb"
+    },
+    {
+      "include": "#type"
+    },
+    {
+      "include": "#status"
+    },
+    {
+      "include": "#field"
+    },
+    {
+      "include": "#variable"
+    },
+    {
+      "include": "#boolean"
+    },
+    {
+      "include": "#operator"
+    }
+  ],
+  "repository": {
+    "request": {
+      "patterns": [
+        {
+          "name": "keyword.control.spl",
+          "match": "@SPL/[0-9]+\\.[0-9]+"
+        }
+      ]
+    },
+    "string": {
+      "name": "string.quoted.double.spl",
+      "begin": "\"",
+      "end": "\"",
+      "patterns": [
+        {
+          "name": "constant.character.escape.spl",
+          "match": "\\\\."
+        }
+      ]
+    },
+    "fence": {
+      "name": "string.unquoted.fenced.spl",
+      "begin": "`{3,}",
+      "end": "`{3,}"
+    },
+    "number": {
+      "name": "constant.numeric.spl",
+      "match": "\\b(?:0|[1-9][0-9]*)(?:\\.[0-9]+)?\\b"
+    },
+    "directive": {
+      "name": "keyword.control.spl",
+      "match": "\\b(?:use|ctx|ctl|grp|when|if|else|assert|exp|data)\\b"
+    },
+    "verb": {
+      "name": "entity.name.function.spl",
+      "match": "\\b(?:gen|xform|analyze|extract|classify|validate|do)\\b"
+    },
+    "type": {
+      "name": "support.type.spl",
+      "match": "\\b(?:str|int|num|bool|enum|list|obj)\\b"
+    },
+    "status": {
+      "name": "support.constant.spl",
+      "match": "\\b(?:ok|clarify|conflict|invalid|refuse)\\b"
+    },
+    "field": {
+      "name": "variable.other.property.spl",
+      "match": "\\b(?:t|in|m|out|q|src|st|res|tr|err|ask|fmt|sch|lang|aud|len|trace|reply)\\b(?=\\s*:)"
+    },
+    "variable": {
+      "name": "variable.other.readwrite.spl",
+      "match": "\\$[A-Za-z_][A-Za-z0-9_]*"
+    },
+    "boolean": {
+      "name": "constant.language.spl",
+      "match": "\\b(?:true|false|null)\\b"
+    },
+    "operator": {
+      "name": "keyword.operator.spl",
+      "match": ":=|&&|\\|\\||==|!=|<=|>=|[!<>=~]"
+    }
+  }
+}
