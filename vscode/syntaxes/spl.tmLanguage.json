@@ -1,0 +1,178 @@
+{
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "name": "Semantic Prompt Language",
+  "scopeName": "source.semantic-prompt-language",
+  "fileTypes": ["spl"],
+  "patterns": [
+    {
+      "include": "#comments"
+    },
+    {
+      "include": "#protocol"
+    },
+    {
+      "include": "#control-flow"
+    },
+    {
+      "include": "#commands"
+    },
+    {
+      "include": "#output-options"
+    },
+    {
+      "include": "#operators"
+    },
+    {
+      "include": "#variables"
+    },
+    {
+      "include": "#constants"
+    },
+    {
+      "include": "#strings"
+    }
+  ],
+  "repository": {
+    "comments": {
+      "patterns": [
+        {
+          "name": "comment.line.number-sign.spl",
+          "match": "#.*$"
+        }
+      ]
+    },
+    "protocol": {
+      "patterns": [
+        {
+          "name": "meta.protocol.spl",
+          "match": "^\\s*(@\\{SPL/1\\})\\s*$",
+          "captures": {
+            "1": {
+              "name": "keyword.control.protocol.spl"
+            }
+          }
+        },
+        {
+          "name": "punctuation.definition.block.spl",
+          "match": "^\\s*(\\$>)"
+        }
+      ]
+    },
+    "control-flow": {
+      "patterns": [
+        {
+          "name": "keyword.control.conditional.spl",
+          "match": "\\b(?:if|else|while|for)\\b"
+        }
+      ]
+    },
+    "commands": {
+      "patterns": [
+        {
+          "name": "keyword.control.constraint.spl",
+          "match": "\\b(?:enforce|forbid|assert|fail)\\b"
+        },
+        {
+          "name": "keyword.control.output.spl",
+          "match": "\\b(?:out|elicit|think)\\b"
+        },
+        {
+          "name": "keyword.declaration.variable.spl",
+          "match": "\\blet\\b"
+        },
+        {
+          "name": "keyword.operator.assignment.spl",
+          "match": "(?<![=!<>])=(?!=)"
+        }
+      ]
+    },
+    "output-options": {
+      "patterns": [
+        {
+          "name": "variable.parameter.option.spl",
+          "match": "\\b(?:len|sch|level)\\b(?=\\s*=)"
+        },
+        {
+          "name": "punctuation.section.parameters.begin.spl",
+          "match": "(?<=\\b(?:out|think))\\{"
+        },
+        {
+          "name": "punctuation.section.parameters.end.spl",
+          "match": "\\}"
+        }
+      ]
+    },
+    "operators": {
+      "patterns": [
+        {
+          "name": "keyword.operator.logical.spl",
+          "match": "(?<![&|])(?:&|\\||!)(?![&|])"
+        },
+        {
+          "name": "keyword.operator.arrow.spl",
+          "match": "->"
+        },
+        {
+          "name": "keyword.operator.range.spl",
+          "match": "\\.\\."
+        },
+        {
+          "name": "punctuation.separator.key-value.spl",
+          "match": "[:,]"
+        }
+      ]
+    },
+    "variables": {
+      "patterns": [
+        {
+          "name": "variable.other.spl",
+          "match": "\\$[A-Za-z_][A-Za-z0-9_]*"
+        }
+      ]
+    },
+    "constants": {
+      "patterns": [
+        {
+          "name": "constant.language.boolean.spl",
+          "match": "\\b(?:true|false)\\b"
+        },
+        {
+          "name": "constant.numeric.spl",
+          "match": "\\b(?:0|[1-9][0-9]*)(?:\\.[0-9]+)?\\b"
+        }
+      ]
+    },
+    "strings": {
+      "patterns": [
+        {
+          "name": "string.quoted.double.spl",
+          "begin": "\"",
+          "end": "\"",
+          "patterns": [
+            {
+              "name": "constant.character.escape.spl",
+              "match": "\\\\."
+            },
+            {
+              "include": "#variables"
+            }
+          ]
+        },
+        {
+          "name": "string.quoted.single.spl",
+          "begin": "'",
+          "end": "'",
+          "patterns": [
+            {
+              "name": "constant.character.escape.spl",
+              "match": "\\\\."
+            },
+            {
+              "include": "#variables"
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

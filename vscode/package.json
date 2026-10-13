@@ -1,0 +1,59 @@
+{
+  "name": "spl-language-support",
+  "displayName": "SPL Language Support",
+  "description": "Syntax highlighting and editing support for Semantic Prompt Language.",
+  "version": "0.1.1",
+  "publisher": "dgawlik",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/dgawlik/the-syntax.git"
+  },
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Programming Languages"
+  ],
+  "keywords": [
+    "spl",
+    "semantic prompt language",
+    "prompt"
+  ],
+  "contributes": {
+    "languages": [
+      {
+        "id": "semantic-prompt-language",
+        "aliases": [
+          "Semantic Prompt Language",
+          "SPL"
+        ],
+        "extensions": [
+          ".spl"
+        ],
+        "firstLine": "^@\\{SPL/1\\}\\s*$",
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "semantic-prompt-language",
+        "scopeName": "source.semantic-prompt-language",
+        "path": "./syntaxes/spl.tmLanguage.json"
+      },
+      {
+        "scopeName": "markdown.spl.fenced",
+        "path": "./syntaxes/markdown-spl.tmLanguage.json",
+        "injectTo": [
+          "text.html.markdown"
+        ],
+        "embeddedLanguages": {
+          "meta.embedded.block.semantic-prompt-language": "semantic-prompt-language"
+        }
+      }
+    ]
+  },
+  "scripts": {
+    "package": "npx --yes @vscode/vsce package"
+  }
+}
