@@ -1,0 +1,7 @@
+@{SPL/1}
+
+$> let $project = 'SPL'
+let $audience = ['developers', 'technical writers']
+out{sch='object'} 'Create a release-note summary for $project with title, audience, and three highlights.'
+
+Return only the requested object.

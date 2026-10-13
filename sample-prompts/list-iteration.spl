@@ -1,0 +1,6 @@
+@{SPL/1}
+
+$> for $i in 0..2:
+    out{len=sentence, sch='string'} "Provide testing tip $i for a Python command-line tool."
+
+Place each tip on its own line.

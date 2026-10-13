@@ -3,208 +3,183 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="SPL/2: a strict, compact language for expressing reliable LLM instructions.">
-  <title>SPL/2 — Semantic Prompt Language</title>
+  <meta name="description" content="Semantic Prompt Language (SPL): a compact protocol for structured LLM instructions.">
+  <title>SPL | Semantic Prompt Language</title>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+  <a class="skip-link" href="#main">Skip to content</a>
   <header class="site-header">
-    <a class="wordmark" href="#top" aria-label="SPL home">SPL<span>/2</span></a>
+    <a class="brand" href="#top" aria-label="SPL home"><span class="brand-mark">@{ }</span> SPL</a>
     <nav aria-label="Primary navigation">
-      <a href="#why">Why SPL</a>
-      <a href="#migration">Migration</a>
-      <a href="#playground">Generator</a>
+      <a href="#language">Language</a>
+      <a href="#commands">Commands</a>
       <a href="#examples">Examples</a>
-      <a href="#standard">Standard</a>
+      <a class="fork-link" href="https://github.com/dgawlik/the-syntax">Fork on GitHub</a>
     </nav>
-    <a class="button button-small" href="#playground">Try it</a>
   </header>
 
-  <main id="top">
-    <section class="hero">
-      <p class="eyebrow">Semantic Prompt Language</p>
-      <h1>Make LLM instructions<br><em>compact, explicit, and repeatable.</em></h1>
-      <p class="hero-copy">SPL/2 is a strict, session-scoped language for turning natural-language intent into structured requests that people can read and models can execute consistently.</p>
-      <p class="hero-copy"><strong>Breaking change:</strong> SPL/2 replaces SPL/1.0 with a denser grammar. See the <a href="#migration">migration guide</a> before upgrading.</p>
+  <main id="main">
+    <section class="hero" id="top">
+      <p class="eyebrow">SPL / 1</p>
+      <h1>Make prompts read<br>like intent.</h1>
+      <p class="lede">Semantic Prompt Language is a compact protocol for combining clear natural-language instructions with structured pseudocode.</p>
       <div class="hero-actions">
-        <a class="button" href="#playground">Generate an SPL request</a>
-        <a class="button button-secondary" href="#standard">Read the standard</a>
+        <a class="button button-primary" href="#quickstart">Start writing</a>
+        <a class="button button-quiet" href="#examples">Browse examples <span aria-hidden="true">-></span></a>
       </div>
-      <div class="hero-code" aria-label="SPL example">
-        <div class="code-caption"><span></span> SPL/2 request</div>
-        <pre><code><span class="token-request">@SPL/2</span>{
-  <span class="token-binding">release</span> <span class="token-operator">=</span> <span class="token-verb">G</span>{
-    <span class="token-field">t</span>:<span class="token-string">"Write a release note"</span>;
-    <span class="token-field">o</span>:{<span class="token-field">fmt</span>:<span class="token-string">"text"</span>,<span class="token-field">len</span>:<span class="token-string">"&lt;=80 words"</span>};
-  };
-  <span class="token-directive">&gt;</span>[<span class="token-name">$release</span>];
-}</code></pre>
+      <pre class="hero-code"><code>@{SPL/1}
+
+$> let $name = 'Ada'
+out{len=sentence, sch='string'} 'Welcome $name to SPL.'
+
+Use a friendly, concise tone.</code></pre>
+    </section>
+
+    <section class="intro" aria-label="SPL benefits">
+      <article><span>01</span><h2>Structured</h2><p>State constraints, output shape, control flow, and session variables directly in the prompt.</p></article>
+      <article><span>02</span><h2>Readable</h2><p>Mix pseudocode with ordinary prose so intent stays legible to people and models.</p></article>
+      <article><span>03</span><h2>Session-aware</h2><p>Declare immutable values once and interpolate them throughout an SPL conversation.</p></article>
+    </section>
+
+    <section id="quickstart" class="section">
+      <div class="section-heading">
+        <p class="eyebrow">Quick start</p>
+        <h2>One prefix starts the protocol.</h2>
+      </div>
+      <div class="two-column">
+        <div>
+          <p>Begin a message with <code>@{SPL/1}</code>. The first <code>$></code> starts a pseudocode block; two consecutive newlines end it. Outside that block, write normal natural-language guidance.</p>
+          <ol class="steps">
+            <li><strong>Activate</strong> with the SPL version prefix.</li>
+            <li><strong>Direct</strong> behavior with a pseudocode block.</li>
+            <li><strong>Refine</strong> the result with plain-language context.</li>
+          </ol>
+        </div>
+        <pre class="code-block"><code>@{SPL/1}
+
+$> out{len=100, sch='text'} 'Write a joke about programming'
+
+Keep it suitable for a team chat.</code></pre>
       </div>
     </section>
 
-    <section id="why" class="section">
+    <section id="language" class="section section-tint">
       <div class="section-heading">
-        <p class="eyebrow">Why SPL</p>
-        <h2>Natural language is powerful.<br>It is not a protocol.</h2>
+        <p class="eyebrow">Language</p>
+        <h2>Small syntax, deliberate control.</h2>
       </div>
-      <div class="benefit-grid">
-        <article>
-          <span class="benefit-number">01</span>
-          <h3>Make intent inspectable</h3>
-          <p>Separate task, inputs, method, quality criteria, output contract, and evidence instead of burying them in a prose prompt.</p>
-        </article>
-        <article>
-          <span class="benefit-number">02</span>
-          <h3>Reduce prompt drift</h3>
-          <p>Explicit bindings, imports, and exports make multi-turn work reproducible without silently relying on chat history.</p>
-        </article>
-        <article>
-          <span class="benefit-number">03</span>
-          <h3>Protect source boundaries</h3>
-          <p>Inert <code>data</code> literals distinguish untrusted source content from executable instructions.</p>
-        </article>
-        <article>
-          <span class="benefit-number">04</span>
-          <h3>Get usable failures</h3>
-          <p>Typed <code>clarify</code>, <code>conflict</code>, <code>invalid</code>, and <code>refuse</code> outcomes replace success-shaped guesses.</p>
-        </article>
+      <div class="syntax-grid">
+        <article><code>@{SPL/1}</code><h3>Protocol header</h3><p>Marks a message as SPL and begins an SPL conversation.</p></article>
+        <article><code>$&gt;</code><h3>Block start</h3><p>Introduces a pseudocode block. Commands run in their written order.</p></article>
+        <article><code>$variable</code><h3>Variable</h3><p>References a session-wide value declared with <code>let</code>.</p></article>
+        <article><code>'quoted text'</code><h3>Literal text</h3><p>Natural language inside a pseudocode block is quoted.</p></article>
       </div>
+      <div class="callout"><strong>Operators:</strong> combine conditions with <code>&amp;</code> (and), <code>|</code> (or), and <code>!</code> (not).</div>
     </section>
 
-    <section id="migration" class="section migration">
+    <section id="commands" class="section">
       <div class="section-heading">
-        <p class="eyebrow">SPL/2 migration</p>
-        <h2>Compact syntax.<br>Deliberate breaking change.</h2>
-        <p>SPL/2 rejects SPL/1.0 requests rather than accepting ambiguous aliases. Update both the request marker and every compacted token.</p>
+        <p class="eyebrow">Reference</p>
+        <h2>Core commands.</h2>
       </div>
-      <div class="migration-table-wrap">
-        <table class="migration-table">
-          <thead>
-            <tr><th>SPL/1.0</th><th>SPL/2</th><th>Purpose</th></tr>
-          </thead>
+      <div class="command-table" role="region" aria-label="SPL command reference" tabindex="0">
+        <table>
+          <thead><tr><th>Command</th><th>Purpose</th><th>Example</th></tr></thead>
           <tbody>
-            <tr><td><code>@SPL/1.0</code></td><td><code>@SPL/2</code></td><td>Request and response marker</td></tr>
-            <tr><td><code>ctx</code>, <code>use</code>, <code>ctl</code>, <code>exp</code></td><td><code>c</code>, <code>u</code>, <code>!</code>, <code>&gt;</code></td><td>Top-level directives</td></tr>
-            <tr><td><code>name := gen{...}</code></td><td><code>name=G{...}</code></td><td>Binding and action syntax</td></tr>
-            <tr><td><code>xform</code>, <code>analyze</code>, <code>extract</code>, <code>classify</code>, <code>validate</code>, <code>do</code>, <code>tool</code></td><td><code>X</code>, <code>A</code>, <code>E</code>, <code>C</code>, <code>V</code>, <code>D</code>, <code>T</code></td><td>Action opcodes</td></tr>
-            <tr><td><code>in</code>, <code>out</code>, <code>src</code>, <code>name</code>, <code>when</code></td><td><code>i</code>, <code>o</code>, <code>s</code>, <code>n</code>, <code>w</code></td><td>Action fields</td></tr>
-            <tr><td><code>st</code>, <code>res</code>, <code>err</code>, <code>thinking-log</code></td><td><code>s</code>, <code>r</code>, <code>er</code>, <code>tl</code></td><td>Response fields</td></tr>
+            <tr><td><code>enforce</code></td><td>Sets a non-negotiable requirement.</td><td><code>enforce 'Use plain language.'</code></td></tr>
+            <tr><td><code>forbid</code></td><td>Prohibits behavior in the response.</td><td><code>forbid 'Reveal internal reasoning.'</code></td></tr>
+            <tr><td><code>assert</code></td><td>Checks a condition and emits a failure if it is false.</td><td><code>assert 'ready' -&gt; 'Not ready.'</code></td></tr>
+            <tr><td><code>fail</code></td><td>Indicates an SPL failure.</td><td><code>fail 'Missing configuration.'</code></td></tr>
+            <tr><td><code>out</code></td><td>Generates output, optionally constraining length and schema.</td><td><code>out{sch='array'} 'List fruits.'</code></td></tr>
+            <tr><td><code>elicit</code></td><td>Requests information from the user.</td><td><code>elicit 'Which language?'</code></td></tr>
+            <tr><td><code>think</code></td><td>Deliberates before producing a result.</td><td><code>think{level='high'} 'Find the cause.'</code></td></tr>
+            <tr><td><code>let</code></td><td>Declares an immutable session-wide variable.</td><td><code>let $name = 'Ada'</code></td></tr>
           </tbody>
         </table>
       </div>
-      <p class="migration-action"><a class="button button-secondary" href="standard.md" target="_blank" rel="noopener">Read the full migration specification</a></p>
     </section>
 
-    <section id="playground" class="section playground">
+    <section class="section section-tint">
       <div class="section-heading">
-        <p class="eyebrow">Interactive generator</p>
-        <h2>Start with intent.<br>Leave with valid SPL.</h2>
-        <p>Choose an operation and a few constraints. The generator produces a complete SPL/2 request you can copy into an SPL-capable chat.</p>
+        <p class="eyebrow">Control flow and data</p>
+        <h2>Guide a response step by step.</h2>
       </div>
-      <div class="playground-grid">
-        <form id="generator" class="generator-card">
-          <label>
-            Operation
-            <select id="operation" name="operation">
-              <option value="gen">Generate new content</option>
-              <option value="xform">Transform existing content</option>
-              <option value="analyze">Analyze information</option>
-              <option value="extract">Extract structured facts</option>
-              <option value="classify">Classify an input</option>
-              <option value="validate">Validate a contract</option>
-            </select>
-          </label>
-          <label>
-            Goal
-            <input id="goal" name="goal" value="Write a concise release note" required>
-          </label>
-          <label>
-            Input or source text <span class="optional">(optional)</span>
-            <textarea id="source" name="source" rows="6" placeholder="Paste source material or an input value here."></textarea>
-          </label>
-          <label>
-            Output type
-            <select id="output" name="output">
-              <option value="text">Plain text</option>
-              <option value="schema">Structured object</option>
-            </select>
-          </label>
-          <label class="check">
-            <input id="trace" name="trace" type="checkbox">
-            <span>Request a typed public trace</span>
-          </label>
-          <label class="check">
-            <input id="plain" name="plain" type="checkbox" checked>
-            <span>Return a plain-text reply when possible</span>
-          </label>
-          <button class="button" type="submit">Generate SPL</button>
-        </form>
-
-        <div class="generated-card">
-          <div class="panel-heading">
-            <span>Generated request</span>
-            <button id="copy-generated" class="text-button" type="button">Copy</button>
-          </div>
-          <pre id="generated" class="code-output" aria-live="polite"></pre>
-          <p id="copy-status" class="copy-status" role="status"></p>
+      <div class="two-column">
+        <div>
+          <h3>Branch and iterate</h3>
+          <p>Use <code>if/else</code> for conditional instructions, <code>while</code> to continue while a condition holds, and <code>for</code> to work through a range or collection.</p>
+          <h3>Keep session context</h3>
+          <p><code>let</code> stores JSON-native strings, numbers, booleans, arrays, and objects. Variables are immutable for the session and can be interpolated in pseudocode.</p>
         </div>
+        <pre class="code-block"><code>$> let $audience = ['developers', 'writers']
+for $i in 0..2:
+    out{len=sentence, sch='string'} "Write tip $i for $audience."</code></pre>
       </div>
     </section>
 
-    <section id="examples" class="section examples">
+    <section id="examples" class="section">
       <div class="section-heading">
         <p class="eyebrow">Examples</p>
-        <h2>Small language.<br>Broad task coverage.</h2>
-        <p>Browse the complete set of SPL/2 request and response examples, including public traces, tool actions, and thinking logs.</p>
-        <div class="standard-actions">
-          <a class="button button-secondary" href="examples.md" target="_blank" rel="noopener">Open complete examples</a>
-        </div>
+        <h2>Prompts ready to adapt.</h2>
       </div>
-      <div class="example-layout">
-        <div class="example-list" role="tablist" aria-label="SPL examples">
-          <button class="example-tab is-active" type="button" data-example="workflow" role="tab" aria-selected="true">Multi-step workflow</button>
-          <button class="example-tab" type="button" data-example="release" role="tab" aria-selected="false">Release note</button>
-          <button class="example-tab" type="button" data-example="incident" role="tab" aria-selected="false">Incident extraction</button>
-          <button class="example-tab" type="button" data-example="analysis" role="tab" aria-selected="false">Metric analysis</button>
-          <button class="example-tab" type="button" data-example="tool" role="tab" aria-selected="false">Tool invocation</button>
-          <button class="example-tab" type="button" data-example="clarify" role="tab" aria-selected="false">Clarification</button>
-        </div>
-        <div class="example-code">
-          <div class="panel-heading">
-            <span id="example-title">Multi-step workflow</span>
-            <button id="copy-example" class="text-button" type="button">Copy</button>
-          </div>
-          <pre id="example-output" class="code-output"></pre>
-        </div>
+      <div class="example-grid">
+        <article class="example-card">
+          <div class="example-title"><h3>Constraints</h3><a href="../sample-prompts/constraints.spl">Source</a></div>
+          <pre><code>@{SPL/1}
+
+$> enforce 'Use plain language suitable for a first-time developer.'
+forbid 'Mention implementation details or internal reasoning.'
+out{len=75, sch='string'} 'Explain what a variable is in JavaScript.'</code></pre>
+          <button class="copy-button" type="button">Copy prompt</button>
+        </article>
+        <article class="example-card">
+          <div class="example-title"><h3>Conditional status</h3><a href="../sample-prompts/conditional-status.spl">Source</a></div>
+          <pre><code>@{SPL/1}
+
+$> if 'build is green':
+    out{len=sentence, sch='string'} 'Report that the build passed.'
+else:
+    think{level='high'} 'Identify the likely cause.'
+    out{len=paragraph, sch='string'} 'Summarize the next step.'</code></pre>
+          <button class="copy-button" type="button">Copy prompt</button>
+        </article>
+        <article class="example-card">
+          <div class="example-title"><h3>Typed JSON output</h3><a href="../sample-prompts/json-output.spl">Source</a></div>
+          <pre><code>@{SPL/1}
+
+$> let $project = 'SPL'
+out{sch='object'} 'Create a release-note summary for $project with title, audience, and three highlights.'</code></pre>
+          <button class="copy-button" type="button">Copy prompt</button>
+        </article>
+        <article class="example-card">
+          <div class="example-title"><h3>Requirements check</h3><a href="../sample-prompts/requirements-check.spl">Source</a></div>
+          <pre><code>@{SPL/1}
+
+$> assert 'requirements are complete &amp; acceptance criteria are defined' -&gt; 'Cannot produce a plan yet.'
+out{len=paragraph, sch='string'} 'Write an implementation plan.'</code></pre>
+          <button class="copy-button" type="button">Copy prompt</button>
+        </article>
       </div>
+      <p class="more-examples">More examples: <a href="../sample-prompts/list-iteration.spl">iteration</a>, <a href="../sample-prompts/user-input.spl">user input</a>, and <a href="../sample-prompts/p1.spl">a simple greeting</a>.</p>
     </section>
 
-    <section id="standard" class="section standard">
-      <div class="section-heading">
-        <p class="eyebrow">The complete standard</p>
-        <h2>SPL/2, in full.</h2>
-        <p>The normative specification is shipped with this site. It defines the session profile, grammar, directive semantics, type algebra, response statuses, and authoring rules.</p>
-        <div class="standard-actions">
-          <a class="button button-secondary" href="standard.md" target="_blank" rel="noopener">Open source Markdown</a>
-          <button id="copy-standard-link" class="text-button" type="button">Copy standard link</button>
-        </div>
-      </div>
-      <div class="standard-viewer">
-        <label for="standard-search">Find in the standard</label>
-        <div class="search-row">
-          <input id="standard-search" type="search" placeholder="Try “response envelope”">
-          <span id="search-result" aria-live="polite"></span>
-        </div>
-        <pre id="standard-text" class="standard-text">Loading SPL/2…</pre>
-      </div>
+    <section class="section failure-section">
+      <p class="eyebrow">Failure responses</p>
+      <h2>Failures have a consistent shape.</h2>
+      <p>When an assertion or condition is not met, SPL can return a standardized failure response.</p>
+      <pre class="code-block"><code>@{SPL/1}
+{
+  "status": "failure",
+  "reason": "Description of the failure"
+}</code></pre>
     </section>
   </main>
 
   <footer>
-    <span>SPL/2 — Semantic Prompt Language</span>
-    <a href="https://github.com/dgawlik/the-syntax">View on GitHub</a>
+    <span><span class="brand-mark">@{ }</span> Semantic Prompt Language</span>
+    <a href="#top">Back to top ↑</a>
   </footer>
-
-  <script src="app.js"></script>
+  <script src="app.js?v=2"></script>
 </body>
 </html>

@@ -1,0 +1,6 @@
+@{SPL/1}
+
+$> assert 'requirements are complete & acceptance criteria are defined' -> 'Cannot produce an implementation plan until requirements and acceptance criteria are available.'
+out{len=paragraph, sch='string'} 'Write an implementation plan for the approved requirements.'
+
+If the assertion fails, return the standard SPL failure response.
