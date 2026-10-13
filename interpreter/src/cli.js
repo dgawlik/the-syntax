@@ -6,7 +6,7 @@ import { stdin as input } from "node:process";
 import { createInterface } from "node:readline/promises";
 import { CopilotClient } from "@github/copilot-sdk";
 import { color, colorizeSpl } from "./ansi.js";
-import { parseSpl, prepareExecution, interpreterInstructions } from "./spl.js";
+import { parseSpl, prepareExecution, interpreterInstructions, validateResponse } from "./spl.js";
 import { SessionStore } from "./store.js";
 
 function usage() {
@@ -14,9 +14,9 @@ function usage() {
   spl auth
   spl models
   spl chat [--model <id>] [--session <name>] [--store <path>]
-  spl run [file] [--model <id>] [--session <name>] [--store <path>]
+  spl run [file] [--prompt <spl>] [--model <id>] [--session <name>] [--store <path>]
 
-Run reads SPL from a file or stdin. Variables declared with let are immutable and
+Run reads SPL from a file, --prompt, or stdin (for example: Get-Content prompt.spl | spl run). Variables declared with let are immutable and
 persisted by session in %APPDATA%\\spl\\sessions.json (or --store). Chat accepts
 multi-line SPL blocks; submit one with .send and leave with .quit.`);
 }
@@ -80,11 +80,15 @@ async function createCopilotSession(client, model) {
 }
 
 async function run(args) {
-  const positional = args.find((arg, index) => !arg.startsWith("--") && args[index - 1] !== "--model" && args[index - 1] !== "--session" && args[index - 1] !== "--store");
+  const inlinePrompt = option(args, "--prompt");
+  const positional = args.find((arg, index) => !arg.startsWith("--") && !["--model", "--session", "--store", "--prompt"].includes(args[index - 1]));
+  if (inlinePrompt && positional) {
+    throw new Error("Specify either a file or --prompt, not both.");
+  }
   const sessionName = option(args, "--session", positional ? basename(positional, ".spl") : "default");
   const model = option(args, "--model");
   const store = new SessionStore(option(args, "--store"));
-  const program = parseSpl(await readSource(positional));
+  const program = parseSpl(inlinePrompt ?? await readSource(positional));
   const persistedVariables = await store.variables(sessionName);
   ensureNewVariables(program, persistedVariables, sessionName);
   const execution = prepareExecution(program, persistedVariables);
@@ -95,6 +99,11 @@ async function run(args) {
   if (execution.failure) {
     console.log(`\n${color.red(color.bold("Response"))}`);
     console.log(JSON.stringify(execution.failure, null, 2));
+    return;
+  }
+  if (execution.elicitation) {
+    console.log(`\n${color.yellow(color.bold("Response"))}`);
+    console.log(execution.elicitation);
     return;
   }
 
@@ -108,7 +117,10 @@ async function run(args) {
       await session.send({ prompt: execution.prompt });
       await done;
       console.log(`\n${color.green(color.bold("Response"))}`);
-      console.log(color.green(colorizeSpl(response)));
+      const violation = validateResponse(response, execution.contract);
+      console.log(violation
+        ? JSON.stringify({ status: "failure", reason: violation }, null, 2)
+        : color.green(colorizeSpl(response)));
     } finally {
       await session.disconnect();
     }
@@ -159,6 +171,9 @@ async function chat(args) {
                 if (execution.failure) {
                   console.log(`\n${color.red(color.bold("Response"))}`);
                   console.log(JSON.stringify(execution.failure, null, 2));
+                } else if (execution.elicitation) {
+                  console.log(`\n${color.yellow(color.bold("Response"))}`);
+                  console.log(execution.elicitation);
                 } else {
                   await store.addVariables(sessionName, program.variables);
                   response = "";
@@ -166,7 +181,10 @@ async function chat(args) {
                   await session.send({ prompt: execution.prompt });
                   await done;
                   console.log(`\n${color.green(color.bold("Response"))}`);
-                  console.log(color.green(colorizeSpl(response)));
+                  const violation = validateResponse(response, execution.contract);
+                  console.log(violation
+                    ? JSON.stringify({ status: "failure", reason: violation }, null, 2)
+                    : color.green(colorizeSpl(response)));
                 }
               } catch (error) {
                 console.error(color.red(`Error: ${error.message}`));
