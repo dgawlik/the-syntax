@@ -1,0 +1,6 @@
+
+
+if ?'Friday today':
+    out{len='word'} 'Reverse Friday letters'
+else:
+    out{len='word'} 'Palindrome Friday letters'

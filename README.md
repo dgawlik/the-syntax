@@ -21,12 +21,35 @@ noise.
 Once you have successful prompt that does what you want, check out it to Git, track the prompts in teams repository,
 and share with friends.
 
+## Scripting
+
+Real strength lies in Bash/Powershell scripting. One example would be with copilot
+
+```bash
+copilot --silent --allow-all-tools --agent=spl -p $(cat <spl_prompt>)
+```
+
+For example this script:
+
+```
+if ?'Friday today':
+    out{len='word'} 'Reverse Friday letters'
+else:
+    out{len='word'} 'Palindrome Friday letters'
+```
+
+You get the picture.
+
+Then do anything you want with the response. Assert/fail keywords generate standard JSON
+response so it is easy to create quality gates etc.
+
 ## Contents
 
 * `agent` the agent for establishing protocol
 * `vscode` syntax support for VSCode
 * `docs` documentation site (static HTML; open `docs/index.html` or serve the folder with GitHub Pages)
 * `sample-prompts` real world and validation prompts
+* `scripting` terminal scripting example
 
 
 ## Contributing
