@@ -30,8 +30,10 @@
       </div>
       <pre class="hero-code"><code>@{SPL/1}
 
-$> let $name = 'Ada'
+$>
+let $name = 'Ada'
 out{len=sentence, sch='string'} 'Welcome $name to SPL.'
+<$
 
 Use a friendly, concise tone.</code></pre>
     </section>
@@ -49,16 +51,18 @@ Use a friendly, concise tone.</code></pre>
       </div>
       <div class="two-column">
         <div>
-          <p>Begin a message with <code>@{SPL/1}</code>. The first <code>$></code> starts a pseudocode block; two consecutive newlines end it. Outside that block, write normal natural-language guidance.</p>
+          <p>Begin a message with <code>@{SPL/1}</code> to initialize a sticky SPL session. Enclose pseudocode blocks between <code>$&gt;</code> and <code>&lt;$</code>. Outside blocks, write normal natural-language guidance.</p>
           <ol class="steps">
             <li><strong>Activate</strong> with the SPL version prefix.</li>
-            <li><strong>Direct</strong> behavior with a pseudocode block.</li>
+            <li><strong>Direct</strong> behavior within <code>$&gt; ... &lt;$</code> blocks.</li>
             <li><strong>Refine</strong> the result with plain-language context.</li>
           </ol>
         </div>
         <pre class="code-block"><code>@{SPL/1}
 
-$> out{len=100, sch='text'} 'Write a joke about programming'
+$>
+out{len=100, sch='text'} 'Write a joke about programming'
+<$
 
 Keep it suitable for a team chat.</code></pre>
       </div>
@@ -70,12 +74,12 @@ Keep it suitable for a team chat.</code></pre>
         <h2>Small syntax, deliberate control.</h2>
       </div>
       <div class="syntax-grid">
-        <article><code>@{SPL/1}</code><h3>Protocol header</h3><p>Marks a message as SPL and begins an SPL conversation.</p></article>
-        <article><code>$&gt;</code><h3>Block start</h3><p>Introduces a pseudocode block. Commands run in their written order.</p></article>
-        <article><code>$variable</code><h3>Variable</h3><p>References a session-wide value declared with <code>let</code>.</p></article>
-        <article><code>'quoted text'</code><h3>Literal text</h3><p>Natural language inside a pseudocode block is quoted.</p></article>
+        <article><code>@{SPL/1}</code><h3>Protocol header</h3><p>Marks a message as SPL and activates a sticky SPL session.</p></article>
+        <article><code>$&gt; ... &lt;$</code><h3>Block delimiters</h3><p>Encloses pseudocode blocks safely without blank-line breakage.</p></article>
+        <article><code>$variable</code><h3>Variable</h3><p>References an immutable session-wide value declared with <code>let</code> or tool output.</p></article>
+        <article><code>[$res =] tool{...}</code><h3>Tool call</h3><p>Invokes an environment tool and optionally binds output.</p></article>
       </div>
-      <div class="callout"><strong>Operators:</strong> combine conditions with <code>&amp;</code> (and), <code>|</code> (or), and <code>!</code> (not).</div>
+      <div class="callout"><strong>Operators:</strong> combine conditions with <code>&amp;</code> (and), <code>|</code> (or), <code>!</code> (not), and comparisons (<code>==</code>, <code>!=</code>, <code>&lt;</code>, <code>&gt;</code>).</div>
     </section>
 
     <section id="commands" class="section">
@@ -91,10 +95,11 @@ Keep it suitable for a team chat.</code></pre>
             <tr><td><code>forbid</code></td><td>Prohibits behavior in the response.</td><td><code>forbid 'Reveal internal reasoning.'</code></td></tr>
             <tr><td><code>assert</code></td><td>Checks a condition and emits a failure if it is false.</td><td><code>assert 'ready' -&gt; 'Not ready.'</code></td></tr>
             <tr><td><code>fail</code></td><td>Indicates an SPL failure.</td><td><code>fail 'Missing configuration.'</code></td></tr>
-            <tr><td><code>out</code></td><td>Generates output, optionally constraining length and schema.</td><td><code>out{sch='array'} 'List fruits.'</code></td></tr>
-            <tr><td><code>elicit</code></td><td>Requests information from the user.</td><td><code>elicit 'Which language?'</code></td></tr>
-            <tr><td><code>think</code></td><td>Deliberates before producing a result.</td><td><code>think{level='high'} 'Find the cause.'</code></td></tr>
+            <tr><td><code>out</code></td><td>Generates output with optional length/granularity and schema.</td><td><code>out{len=sentence, sch='string'} 'Greeting.'</code></td></tr>
+            <tr><td><code>elicit</code></td><td>Requests information from the user (suspends execution).</td><td><code>elicit 'Which language?'</code></td></tr>
+            <tr><td><code>think</code></td><td>Deliberates with specified reasoning intensity.</td><td><code>think{level='high'} 'Find the cause.'</code></td></tr>
             <tr><td><code>let</code></td><td>Declares an immutable session-wide variable.</td><td><code>let $name = 'Ada'</code></td></tr>
+            <tr><td><code>[$res =] tool{...}</code></td><td>Invokes an environment tool and binds output.</td><td><code>$files = search{query='auth'}</code></td></tr>
           </tbody>
         </table>
       </div>
@@ -108,13 +113,15 @@ Keep it suitable for a team chat.</code></pre>
       <div class="two-column">
         <div>
           <h3>Branch and iterate</h3>
-          <p>Use <code>if/else</code> for conditional instructions, <code>while</code> to continue while a condition holds, and <code>for</code> to work through a range or collection.</p>
+          <p>Use <code>if/else</code> for conditional instructions, <code>while{max=N}</code> to loop with safe iteration caps, and <code>for</code> to work through a range or collection.</p>
           <h3>Keep session context</h3>
           <p><code>let</code> stores JSON-native strings, numbers, booleans, arrays, and objects. Variables are immutable for the session and can be interpolated in pseudocode.</p>
         </div>
-        <pre class="code-block"><code>$> let $audience = ['developers', 'writers']
+        <pre class="code-block"><code>$>
+let $audience = ['developers', 'writers']
 for $i in 0..2:
-    out{len=sentence, sch='string'} "Write tip $i for $audience."</code></pre>
+    out{len=sentence, sch='string'} "Write tip $i for $audience."
+<$</code></pre>
       </div>
     </section>
 
@@ -128,40 +135,61 @@ for $i in 0..2:
           <div class="example-title"><h3>Constraints</h3><a href="../sample-prompts/constraints.spl">Source</a></div>
           <pre><code>@{SPL/1}
 
-$> enforce 'Use plain language suitable for a first-time developer.'
+$>
+enforce 'Use plain language suitable for a first-time developer.'
 forbid 'Mention implementation details or internal reasoning.'
-out{len=75, sch='string'} 'Explain what a variable is in JavaScript.'</code></pre>
+out{len=75, sch='string'} 'Explain what a variable is in JavaScript.'
+<$</code></pre>
           <button class="copy-button" type="button">Copy prompt</button>
         </article>
         <article class="example-card">
           <div class="example-title"><h3>Conditional status</h3><a href="../sample-prompts/conditional-status.spl">Source</a></div>
           <pre><code>@{SPL/1}
 
-$> if 'build is green':
+$>
+if 'build is green':
     out{len=sentence, sch='string'} 'Report that the build passed.'
 else:
     think{level='high'} 'Identify the likely cause.'
-    out{len=paragraph, sch='string'} 'Summarize the next step.'</code></pre>
+    out{len=paragraph, sch='string'} 'Summarize the next step.'
+<$</code></pre>
           <button class="copy-button" type="button">Copy prompt</button>
         </article>
         <article class="example-card">
           <div class="example-title"><h3>Typed JSON output</h3><a href="../sample-prompts/json-output.spl">Source</a></div>
           <pre><code>@{SPL/1}
 
-$> let $project = 'SPL'
-out{sch='object'} 'Create a release-note summary for $project with title, audience, and three highlights.'</code></pre>
+$>
+let $project = 'SPL'
+out{sch='object'} 'Create a release-note summary for $project with title, audience, and three highlights.'
+<$</code></pre>
           <button class="copy-button" type="button">Copy prompt</button>
         </article>
         <article class="example-card">
           <div class="example-title"><h3>Requirements check</h3><a href="../sample-prompts/requirements-check.spl">Source</a></div>
           <pre><code>@{SPL/1}
 
-$> assert 'requirements are complete &amp; acceptance criteria are defined' -&gt; 'Cannot produce a plan yet.'
-out{len=paragraph, sch='string'} 'Write an implementation plan.'</code></pre>
+$>
+assert 'requirements are complete &amp; acceptance criteria are defined' -&gt; 'Cannot produce a plan yet.'
+out{len=paragraph, sch='string'} 'Write an implementation plan.'
+<$</code></pre>
+          <button class="copy-button" type="button">Copy prompt</button>
+        </article>
+        <article class="example-card">
+          <div class="example-title"><h3>Tool invocation</h3><a href="../sample-prompts/tool-invocation.spl">Source</a></div>
+          <pre><code>@{SPL/1}
+
+$>
+$matches = search{query='auth_token'} 'Locate token usage'
+if $matches != null:
+    out{sch='markdown'} 'Summarize token usage from $matches'
+else:
+    fail 'No authentication token usages found'
+<$</code></pre>
           <button class="copy-button" type="button">Copy prompt</button>
         </article>
       </div>
-      <p class="more-examples">More examples: <a href="../sample-prompts/list-iteration.spl">iteration</a>, <a href="../sample-prompts/user-input.spl">user input</a>, and <a href="../sample-prompts/p1.spl">a simple greeting</a>.</p>
+      <p class="more-examples">More examples: <a href="../sample-prompts/tool-invocation.spl">tool calls</a>, <a href="../sample-prompts/list-iteration.spl">iteration</a>, <a href="../sample-prompts/user-input.spl">user input</a>, and <a href="../sample-prompts/p1.spl">a simple greeting</a>.</p>
     </section>
 
     <section class="section failure-section">

@@ -1,6 +1,8 @@
 @{SPL/1}
 
-$> let $user_name = 'Ada'
+$>
+let $user_name = 'Ada'
 out{len=sentence, sch='string'} 'Welcome $user_name to SPL.'
+<$
 
 Use a friendly, concise tone.

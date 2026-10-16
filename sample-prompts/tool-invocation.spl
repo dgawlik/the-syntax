@@ -1,0 +1,11 @@
+@{SPL/1}
+
+$>
+$matches = search{query='auth_token'} 'Locate authentication token handling'
+if $matches != null:
+    out{sch='markdown'} 'Summarize token usage from $matches'
+else:
+    fail 'No authentication token usages found'
+<$
+
+Provide concise architectural recommendations.
