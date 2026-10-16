@@ -43,6 +43,18 @@ out{len='under 5 bullets', fmt='bullet_list'} 'Summarize $topic'
   <p><strong>SPL is a prompt notation, not a runtime.</strong> There is no parser or evaluator behind it: <code>if</code>, <code>while</code>, <code>assert</code> and friends describe behaviour the model is asked to follow. Results are as deterministic as the model is. See <a href="execution.html">Execution &amp; errors</a> and <a href="tooling.html">Tooling &amp; testing</a> for how the behaviour is specified and verified.</p>
 </div>
 
+<h2>Scripting</h2>
+<p>The real strength of SPL shows in Bash/PowerShell scripting. Run a prompt non-interactively with the Copilot CLI:</p>
+<pre><code>copilot --silent --allow-all-tools --agent=spl -p $(cat &lt;spl_prompt&gt;)</code></pre>
+<p>The <a href="https://github.com/dgawlik/the-syntax/blob/main/scripting/run-script.ps1"><code>scripting/run-script.ps1</code></a> wrapper does the same on PowerShell and takes the prompt path as its only parameter:</p>
+<pre><code>.\scripting\run-script.ps1 .\prompt.spl</code></pre>
+<p>For example, this prompt:</p>
+<pre><code class="language-spl">if ?'Friday today':
+    out{len='word'} 'Reverse Friday letters'
+else:
+    out{len='word'} 'Palindrome Friday letters'</code></pre>
+<p>Then do anything you want with the response. <code>assert</code>/<code>fail</code> produce a standard JSON <a href="execution.html#envelope">failure envelope</a>, so it is easy to build quality gates and other automation on top.</p>
+
 <h2>Where to go next</h2>
 <div class="cards">
   <a class="card" href="getting-started.html"><h3>Getting started</h3><p>Install the agent and run your first SPL message.</p></a>
@@ -60,6 +72,7 @@ out{len='under 5 bullets', fmt='bullet_list'} 'Summarize $topic'
   <tr><td><code>agent/</code></td><td>The agent (<code>spl.agent.md</code>) that establishes the protocol, the conformance suite and fixtures.</td></tr>
   <tr><td><code>vscode/</code></td><td>VS Code extension with syntax highlighting for <code>.spl</code> files and <code>```spl</code> fences.</td></tr>
   <tr><td><code>sample-prompts/</code></td><td>Real-world prompts and single-message validation prompts.</td></tr>
+  <tr><td><code>scripting/</code></td><td>Terminal scripting example (<code>run-script.ps1</code>) that runs an SPL prompt through the Copilot CLI.</td></tr>
   <tr><td><code>docs/</code></td><td>This site.</td></tr>
 </table>
 
