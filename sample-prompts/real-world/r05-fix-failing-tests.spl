@@ -1,0 +1,18 @@
+@{SPL/1}
+
+Drive a test-fix loop, but never loop forever and never touch the tests themselves.
+
+$>
+forbid 'Do not edit, skip or delete test files to make them pass'
+forbid 'Do not run any command other than the test command'
+let $cmd = 'npm test'
+
+execute{command=$cmd} 'Run the test suite'
+
+while{max=3, on_max='fail'} ?'the latest test output contains failures':
+    think{level='medium'} 'Find the root cause of the failures in the latest test output'
+    edit{target='production code'} 'Apply the smallest fix that resolves the root cause'
+    execute{command=$cmd} 'Re-run the test suite'
+
+out{len='two sentences'} 'Report that all tests pass and what was changed to get there.'
+<$

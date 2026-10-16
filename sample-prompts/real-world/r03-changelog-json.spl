@@ -1,0 +1,11 @@
+@{SPL/1}
+
+Turn recent git history into machine-readable release notes.
+
+$>
+let $range = elicit{sch='string'} 'Which git range should the changelog cover? (e.g. v1.2.0..HEAD)'
+$log = execute{command='git --no-pager log --oneline $range'} 'List commits in the range'
+assert len($log) > 0 -> 'No commits found in range $range'
+
+out{sch={'type': 'object', 'required': ['range', 'features', 'fixes', 'other'], 'properties': {'range': {'type': 'string'}, 'features': {'type': 'array', 'items': {'type': 'string'}}, 'fixes': {'type': 'array', 'items': {'type': 'string'}}, 'other': {'type': 'array', 'items': {'type': 'string'}}}}} 'Classify each commit below into features, fixes or other, rewriting each as a user-facing sentence. Use "$range" as the range value. Commits: $log'
+<$

@@ -1,0 +1,12 @@
+@{SPL/1}
+
+Extract action items from meeting notes so they can be piped into a task tracker.
+
+$>
+let $notes = elicit 'Paste the meeting notes or transcript.'
+assert len($notes) > 50 -> 'Notes are too short to contain meaningful action items'
+
+forbid 'Do not invent owners or due dates that are not stated in the notes; use null instead'
+
+out{sch={'type': 'array', 'items': {'type': 'object', 'required': ['task', 'owner', 'due'], 'properties': {'task': {'type': 'string'}, 'owner': {'type': ['string', 'null']}, 'due': {'type': ['string', 'null']}}}}} 'Extract every action item from the notes below as a JSON array of objects with task, owner and due (ISO date or null). Notes: $notes'
+<$

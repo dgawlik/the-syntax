@@ -19,7 +19,7 @@ const markdownGrammar = process.env.MARKDOWN_GRAMMAR
   : JSON.stringify({ scopeName: 'text.html.markdown', patterns: [] });
 
 const grammars = {
-  'source.spl': read('syntaxes', 'spl.tmLanguage.json'),
+  'source.spl-language': read('syntaxes', 'spl.tmLanguage.json'),
   'markdown.spl.codeblock': read('syntaxes', 'spl-markdown-injection.tmLanguage.json'),
   'text.html.markdown': markdownGrammar,
 };
@@ -61,11 +61,11 @@ function expectNoScope(tokens, line, text, scope) {
 }
 
 (async () => {
-  const spl = await registry.loadGrammar('source.spl');
+  const spl = await registry.loadGrammar('source.spl-language');
   const md = await registry.loadGrammar('text.html.markdown');
 
   // .spl files
-  const sampleDir = path.join(root, '..', 'sample-prompts');
+  const sampleDir = path.join(root, '..', 'sample-prompts', 'validation');
   for (const f of fs.readdirSync(sampleDir).filter((n) => n.endsWith('.spl'))) {
     const tokens = tokenize(spl, fs.readFileSync(path.join(sampleDir, f), 'utf8'));
     expectScope(tokens, 0, 'SPL', 'keyword.control.directive');

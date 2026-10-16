@@ -1,7 +1,7 @@
 {
   "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
   "name": "SPL",
-  "scopeName": "source.spl",
+  "scopeName": "source.spl-language",
   "patterns": [
     { "include": "#marker" },
     { "include": "#multiline-block" },

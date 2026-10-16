@@ -1,0 +1,22 @@
+@{SPL/1}
+
+Review a source file the way a senior engineer would in a pull request.
+
+$>
+let $file = elicit{sch='string'} 'Which file should I review? (relative path)'
+try:
+    $code = read{path=$file}
+on_error:
+    fail 'Cannot review: $file could not be read'
+assert len($code) > 0 -> 'File is empty, nothing to review'
+
+forbid 'Do not rewrite the whole file; only quote the lines that matter'
+
+let $checks = ['correctness and edge cases', 'error handling', 'security', 'readability', 'test coverage']
+let $findings = for $c in $checks:
+    let $f = out{len='one or two sentences', fmt='sentence'} 'Review the code below for $c. If there is nothing to report, say "No issues". Code: $code'
+    yield $f
+
+think{level='low'} 'Rank the findings by severity and drop the ones that say "No issues"'
+out{len='under 8 bullets', fmt='bullet_list'} 'Summarize the review of $file from these findings, most severe first: $findings'
+<$

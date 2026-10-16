@@ -23,7 +23,7 @@
           "while": "(^|\\G)(?!\\s*([`~]{3,})\\s*$)",
           "contentName": "meta.embedded.block.spl",
           "patterns": [
-            { "include": "source.spl#embedded" }
+            { "include": "source.spl-language#embedded" }
           ]
         }
       ]

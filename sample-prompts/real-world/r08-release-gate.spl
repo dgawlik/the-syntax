@@ -1,0 +1,29 @@
+@{SPL/1}
+
+Decide whether a release may ship. Hard gates abort; soft gates produce warnings.
+
+$>
+let $version = elicit{sch='string'} 'Which version are you releasing?'
+let $env = elicit{sch='string'} 'Target environment (staging or prod)?'
+assert $env in ['staging', 'prod'] -> 'Unknown environment: $env'
+
+if $env == 'prod':
+    enforce 'Require a second reviewer sign-off before the release proceeds'
+    forbid 'Do not recommend skipping the staging soak period'
+
+try:
+    $changelog = read{path='CHANGELOG.md'}
+on_error:
+    fail 'CHANGELOG.md is missing; cannot release $version'
+
+execute{command='npm test --silent'} 'Run the full test suite'
+assert !?'the test output contains failures' -> 'Tests are failing; release blocked'
+assert ?'the changelog has an entry for version $version' -> 'CHANGELOG.md has no entry for the requested version'
+
+let $warnings = out{sch='array'} 'List up to 3 risks from the changelog that deserve a manual check before shipping, as a JSON array of strings (empty if none). Changelog: $changelog'
+
+if len($warnings) == 0:
+    out 'Release $version is clear to ship to $env.'
+else:
+    out{fmt='bullet_list'} 'Release $version may ship to $env after these manual checks: $warnings'
+<$

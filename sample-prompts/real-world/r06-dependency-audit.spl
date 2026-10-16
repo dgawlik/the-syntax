@@ -1,0 +1,24 @@
+@{SPL/1}
+
+Audit the dependencies of a Node.js project and flag the ones that deserve attention.
+
+$>
+def risk_note($name):
+    let $note = out{len='one sentence', fmt='sentence'} 'State whether the npm package "$name" is deprecated, unmaintained or has well-known security concerns. Say "OK" if none.'
+    return $note
+
+try:
+    $manifest = read{path='package.json'}
+on_error:
+    fail 'package.json not found in the workspace root'
+
+let $deps = out{sch='array'} 'List the names of all runtime dependencies declared in this package.json as a JSON array of strings: $manifest'
+assert len($deps) > 0 -> 'Project declares no dependencies'
+
+let $notes = for $d in $deps:
+    let $n = risk_note($d)
+    yield '$d: $n'
+
+forbid 'Do not invent version numbers or CVE identifiers'
+out{fmt='table', len='one row per dependency'} 'Present these notes as a table with columns Package and Assessment, with flagged packages first: $notes'
+<$

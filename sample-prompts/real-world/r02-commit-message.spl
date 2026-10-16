@@ -1,0 +1,18 @@
+@{SPL/1}
+
+Write a Conventional Commits message for what is currently staged.
+
+$>
+enforce 'Subject line is at most 72 characters, imperative mood, no trailing period'
+enforce 'Subject starts with one of: feat, fix, docs, refactor, test, chore'
+
+$diff = execute{command='git --no-pager diff --staged'} 'Get the staged changes'
+assert len($diff) > 0 -> 'Nothing is staged'
+
+let $subject = out{len='one line', fmt='sentence'} 'Write the commit subject for this diff: $diff'
+if len($diff) > 2000 | ?'the change touches several unrelated concerns':
+    let $body = out{len='under 5 bullets', fmt='bullet_list'} 'Explain what changed and why, grouped by concern, for this diff: $diff'
+    out 'Subject: $subject Body: $body'
+else:
+    out 'Subject: $subject'
+<$

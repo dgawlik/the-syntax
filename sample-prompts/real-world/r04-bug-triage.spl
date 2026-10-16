@@ -1,0 +1,25 @@
+@{SPL/1}
+
+Triage an incoming bug report and decide who should handle it.
+
+$>
+def classify($users, $workaround):
+    if $users >= 1000 & !$workaround:
+        return 'critical'
+    if $users >= 100 | ?'the report describes data loss or a security issue':
+        return 'high'
+    if $users >= 10:
+        return 'medium'
+    return 'low'
+
+let $report = elicit 'Paste the bug report.'
+let $impact = elicit{sch='number'} 'How many users are affected (estimate)?'
+let $has_workaround = elicit{sch='boolean'} 'Is there a known workaround?'
+let $severity = classify($impact, $has_workaround)
+
+think{level='low'} 'Decide the likely component and owning team for the report: "$report"'
+out{fmt='markdown', len='about 120 words'} 'Write a triage note for the report "$report". Severity is $severity, affected users: $impact. Include sections: Summary, Suspected component, Suggested next step.'
+
+if $severity == 'critical':
+    out 'Page the on-call engineer immediately.'
+<$

@@ -25,7 +25,7 @@
   "contributes": {
     "languages": [
       {
-        "id": "spl",
+        "id": "semantic-prompt-language",
         "aliases": [
           "SPL",
           "Semantic Prompt Language",
@@ -39,8 +39,8 @@
     ],
     "grammars": [
       {
-        "language": "spl",
-        "scopeName": "source.spl",
+        "language": "semantic-prompt-language",
+        "scopeName": "source.spl-language",
         "path": "./syntaxes/spl.tmLanguage.json"
       },
       {

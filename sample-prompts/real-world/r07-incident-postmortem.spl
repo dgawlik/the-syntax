@@ -1,0 +1,21 @@
+@{SPL/1}
+
+Guide an engineer through writing a blameless postmortem.
+
+$>
+enforce 'Use blameless language: describe systems and processes, never individuals'
+
+let $title = elicit 'Short title of the incident?'
+let $start = elicit 'When did impact start? (UTC timestamp)'
+let $end = elicit 'When was it resolved? (UTC timestamp)'
+let $timeline = elicit 'Paste the raw timeline or chat log.'
+let $cause = elicit 'What do you believe the root cause was?'
+
+think{level='high'} 'Reconstruct the sequence of events from: $timeline. Check it against the stated root cause: $cause. Identify detection gaps and contributing factors.'
+
+if ?'the stated root cause is a symptom rather than an underlying cause':
+    out 'Note: "$cause" looks like a symptom; the analysis below digs one level deeper.'
+
+out{fmt='markdown', len='about 400 words', synth=true} 'Write the postmortem for "$title" (impact $start to $end) with sections: Summary, Impact, Timeline, Root cause, What went well, What went wrong.'
+out{fmt='bullet_list', len='3 to 5 bullets', synth=true} 'Propose action items, each with a suggested owner role and priority.'
+<$
