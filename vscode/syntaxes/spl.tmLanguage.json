@@ -1,188 +1,211 @@
 {
   "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
-  "name": "Semantic Prompt Language",
-  "scopeName": "source.semantic-prompt-language",
-  "fileTypes": ["spl"],
+  "name": "SPL",
+  "scopeName": "source.spl",
   "patterns": [
-    {
-      "include": "#comments"
-    },
-    {
-      "include": "#protocol"
-    },
-    {
-      "include": "#control-flow"
-    },
-    {
-      "include": "#commands"
-    },
-    {
-      "include": "#output-options"
-    },
-    {
-      "include": "#operators"
-    },
-    {
-      "include": "#variables"
-    },
-    {
-      "include": "#constants"
-    },
-    {
-      "include": "#strings"
-    }
+    { "include": "#marker" },
+    { "include": "#multiline-block" },
+    { "include": "#single-block" }
   ],
   "repository": {
-    "comments": {
+    "embedded": {
+      "comment": "Content of a ```spl fence in Markdown: blocks plus bare statements.",
+      "patterns": [
+        { "include": "#marker" },
+        { "include": "#multiline-block" },
+        { "include": "#single-block" },
+        { "include": "#code" }
+      ]
+    },
+    "marker": {
+      "match": "(@\\{)(SPL)(/)(off|[^}\\s]*)(\\})",
+      "name": "meta.directive.spl",
+      "captures": {
+        "1": { "name": "punctuation.definition.directive.begin.spl" },
+        "2": { "name": "keyword.control.directive.spl" },
+        "3": { "name": "punctuation.separator.spl" },
+        "4": { "name": "constant.numeric.version.spl" },
+        "5": { "name": "punctuation.definition.directive.end.spl" }
+      }
+    },
+    "multiline-block": {
+      "begin": "(\\$>)[ \\t]*(?=(?:#.*)?$)",
+      "end": "<\\$|\\z",
+      "beginCaptures": { "1": { "name": "punctuation.section.embedded.begin.spl" } },
+      "endCaptures": { "0": { "name": "punctuation.section.embedded.end.spl" } },
+      "name": "meta.block.multiline.spl",
+      "patterns": [{ "include": "#code" }]
+    },
+    "single-block": {
+      "begin": "(\\$>)(?=[ \\t]*\\S)",
+      "end": "(?=^\\S)",
+      "beginCaptures": { "1": { "name": "punctuation.section.embedded.begin.spl" } },
+      "name": "meta.block.single.spl",
+      "patterns": [{ "include": "#code" }]
+    },
+    "code": {
+      "patterns": [
+        { "include": "#comment" },
+        { "include": "#string-single" },
+        { "include": "#string-double" },
+        { "include": "#function-def" },
+        { "include": "#keywords" },
+        { "include": "#constants" },
+        { "include": "#numbers" },
+        { "include": "#variable" },
+        { "include": "#builtin" },
+        { "include": "#semantic-marker" },
+        { "include": "#field-access" },
+        { "include": "#operators" },
+        { "include": "#braces" },
+        { "include": "#tool-call" },
+        { "include": "#function-call" },
+        { "include": "#punctuation" }
+      ]
+    },
+    "comment": {
+      "match": "(#).*$",
+      "name": "comment.line.number-sign.spl",
+      "captures": { "1": { "name": "punctuation.definition.comment.spl" } }
+    },
+    "string-single": {
+      "begin": "'",
+      "end": "'|$",
+      "name": "string.quoted.single.spl",
+      "beginCaptures": { "0": { "name": "punctuation.definition.string.begin.spl" } },
+      "endCaptures": { "0": { "name": "punctuation.definition.string.end.spl" } },
+      "patterns": [{ "include": "#string-content" }]
+    },
+    "string-double": {
+      "begin": "\"",
+      "end": "\"|$",
+      "name": "string.quoted.double.spl",
+      "beginCaptures": { "0": { "name": "punctuation.definition.string.begin.spl" } },
+      "endCaptures": { "0": { "name": "punctuation.definition.string.end.spl" } },
+      "patterns": [{ "include": "#string-content" }]
+    },
+    "string-content": {
       "patterns": [
         {
-          "name": "comment.line.number-sign.spl",
-          "match": "#.*$"
+          "match": "\\\\['\"\\\\$]",
+          "name": "constant.character.escape.spl"
+        },
+        {
+          "begin": "\\$\\{",
+          "end": "\\}|$",
+          "name": "meta.interpolation.spl",
+          "beginCaptures": { "0": { "name": "punctuation.section.interpolation.begin.spl" } },
+          "endCaptures": { "0": { "name": "punctuation.section.interpolation.end.spl" } },
+          "contentName": "meta.embedded.expression.spl",
+          "patterns": [
+            {
+              "match": "\\G[A-Za-z_]\\w*(?=\\})",
+              "name": "variable.other.interpolated.spl"
+            },
+            { "include": "#code" }
+          ]
+        },
+        {
+          "match": "(\\$)([A-Za-z_]\\w*)",
+          "name": "meta.interpolation.spl",
+          "captures": {
+            "1": { "name": "punctuation.definition.variable.spl" },
+            "2": { "name": "variable.other.interpolated.spl" }
+          }
         }
       ]
     },
-    "protocol": {
-      "patterns": [
-        {
-          "name": "keyword.control.protocol.spl",
-          "match": "^\\s*(@\\{SPL/1\\})\\s*$"
-        },
-        {
-          "name": "punctuation.definition.block.spl",
-          "match": "(?:\\$>|<\\$)"
-        }
-      ]
+    "function-def": {
+      "match": "\\b(def)\\b(?:\\s+([A-Za-z_]\\w*))?",
+      "captures": {
+        "1": { "name": "storage.type.function.spl" },
+        "2": { "name": "entity.name.function.spl" }
+      }
     },
-    "control-flow": {
+    "keywords": {
       "patterns": [
         {
-          "name": "keyword.control.conditional.spl",
-          "match": "\\b(?:if|else|while|for)\\b"
-        }
-      ]
-    },
-    "commands": {
-      "patterns": [
-        {
-          "name": "keyword.control.constraint.spl",
-          "match": "\\b(?:enforce|forbid|assert|fail)\\b"
+          "match": "\\b(?:let|reset)\\b",
+          "name": "storage.type.spl"
         },
         {
-          "name": "keyword.control.output.spl",
-          "match": "\\b(?:out|elicit|think)\\b"
+          "match": "\\b(?:out|elicit|think|enforce|forbid|assert|fail)\\b",
+          "name": "keyword.control.statement.spl"
         },
         {
-          "name": "keyword.declaration.variable.spl",
-          "match": "\\blet\\b"
-        },
-        {
-          "name": "entity.name.function.tool.spl",
-          "match": "\\b[a-zA-Z_][a-zA-Z0-9_]*(?=\\s*\\{)"
-        },
-        {
-          "name": "keyword.operator.assignment.spl",
-          "match": "(?<![=!<>])=(?!=)"
-        }
-      ]
-    },
-    "output-options": {
-      "patterns": [
-        {
-          "name": "variable.parameter.option.spl",
-          "match": "\\b[a-zA-Z_][a-zA-Z0-9_]*(?=\\s*=)"
-        },
-        {
-          "name": "punctuation.section.parameters.begin.spl",
-          "match": "\\{"
-        },
-        {
-          "name": "punctuation.section.parameters.end.spl",
-          "match": "\\}"
-        }
-      ]
-    },
-    "operators": {
-      "patterns": [
-        {
-          "name": "keyword.operator.logical.spl",
-          "match": "(?<![&|])(?:&|\\||!)(?![&|])"
-        },
-        {
-          "name": "keyword.operator.comparison.spl",
-          "match": "(?:==|!=|<=|>=|<|>)"
-        },
-        {
-          "name": "keyword.operator.expression.spl",
-          "match": "\\bin\\b"
-        },
-        {
-          "name": "keyword.operator.arrow.spl",
-          "match": "->"
-        },
-        {
-          "name": "keyword.operator.range.spl",
-          "match": "\\.\\."
-        },
-        {
-          "name": "punctuation.separator.key-value.spl",
-          "match": "[:,]"
-        }
-      ]
-    },
-    "variables": {
-      "patterns": [
-        {
-          "name": "variable.other.spl",
-          "match": "\\$[A-Za-z_][A-Za-z0-9_]*"
+          "match": "\\b(?:if|else|while|for|in|break|continue|return|yield|try|on_error)\\b",
+          "name": "keyword.control.flow.spl"
         }
       ]
     },
     "constants": {
+      "match": "\\b(?:true|false|null)\\b",
+      "name": "constant.language.spl"
+    },
+    "numbers": {
+      "match": "\\b\\d+(?:\\.\\d+)?(?:[eE][+-]?\\d+)?\\b",
+      "name": "constant.numeric.spl"
+    },
+    "variable": {
+      "match": "(\\$)([A-Za-z_]\\w*)",
+      "name": "variable.other.spl",
+      "captures": {
+        "1": { "name": "punctuation.definition.variable.spl" }
+      }
+    },
+    "builtin": {
+      "match": "\\blen(?=\\s*\\()",
+      "name": "support.function.builtin.spl"
+    },
+    "semantic-marker": {
+      "match": "\\?(?=\\s*['\"])",
+      "name": "keyword.operator.semantic.spl"
+    },
+    "field-access": {
+      "match": "(\\.)(?!\\.)([A-Za-z_]\\w*)",
+      "captures": {
+        "1": { "name": "punctuation.accessor.spl" },
+        "2": { "name": "variable.other.property.spl" }
+      }
+    },
+    "operators": {
       "patterns": [
-        {
-          "name": "constant.language.boolean.spl",
-          "match": "\\b(?:true|false)\\b"
-        },
-        {
-          "name": "constant.language.null.spl",
-          "match": "\\bnull\\b"
-        },
-        {
-          "name": "constant.numeric.spl",
-          "match": "\\b(?:0|[1-9][0-9]*)(?:\\.[0-9]+)?\\b"
-        }
+        { "match": "->", "name": "keyword.operator.arrow.spl" },
+        { "match": "\\.\\.", "name": "keyword.operator.range.spl" },
+        { "match": "==|!=|<=|>=|<|>", "name": "keyword.operator.comparison.spl" },
+        { "match": "&|\\||!", "name": "keyword.operator.logical.spl" },
+        { "match": "\\+|-|\\*|/", "name": "keyword.operator.arithmetic.spl" },
+        { "match": "=", "name": "keyword.operator.assignment.spl" }
       ]
     },
-    "strings": {
+    "braces": {
+      "comment": "Tool/statement parameters {name=value} and JSON object literals.",
+      "begin": "\\{",
+      "end": "\\}",
+      "beginCaptures": { "0": { "name": "punctuation.section.braces.begin.spl" } },
+      "endCaptures": { "0": { "name": "punctuation.section.braces.end.spl" } },
+      "name": "meta.braces.spl",
       "patterns": [
         {
-          "name": "string.quoted.double.spl",
-          "begin": "\"",
-          "end": "\"",
-          "patterns": [
-            {
-              "name": "constant.character.escape.spl",
-              "match": "\\\\."
-            },
-            {
-              "include": "#variables"
-            }
-          ]
+          "match": "\\b[A-Za-z_]\\w*(?=\\s*=(?!=))",
+          "name": "variable.parameter.spl"
         },
-        {
-          "name": "string.quoted.single.spl",
-          "begin": "'",
-          "end": "'",
-          "patterns": [
-            {
-              "name": "constant.character.escape.spl",
-              "match": "\\\\."
-            },
-            {
-              "include": "#variables"
-            }
-          ]
-        }
+        { "include": "#code" }
+      ]
+    },
+    "tool-call": {
+      "match": "\\b[A-Za-z_]\\w*(?=\\s*\\{)",
+      "name": "support.function.tool.spl"
+    },
+    "function-call": {
+      "match": "\\b[A-Za-z_]\\w*(?=\\s*\\()",
+      "name": "entity.name.function.call.spl"
+    },
+    "punctuation": {
+      "patterns": [
+        { "match": ",", "name": "punctuation.separator.comma.spl" },
+        { "match": ":", "name": "punctuation.separator.colon.spl" },
+        { "match": "[\\[\\]()]", "name": "punctuation.section.brackets.spl" }
       ]
     }
   }

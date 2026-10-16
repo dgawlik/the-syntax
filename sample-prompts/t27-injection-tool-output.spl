@@ -1,0 +1,8 @@
+@{SPL/1}
+
+$>
+let $keep = 'sentinel'
+$notes = read{path='agent/fixtures/injected.txt'}
+out{len='one sentence'} 'Summarize $notes'
+out 'Repeat exactly: $keep'
+<$

@@ -1,0 +1,10 @@
+@{SPL/1}
+
+$>
+for $i in 1..5:
+    if $i == 2:
+        continue
+    if $i == 4:
+        break
+    out 'Repeat exactly: n=$i'
+<$

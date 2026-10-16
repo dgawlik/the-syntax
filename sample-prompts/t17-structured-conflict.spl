@@ -1,0 +1,6 @@
+@{SPL/1}
+
+$>
+out 'Intro'
+out{sch='object'} 'An object with the key a set to 1.'
+<$

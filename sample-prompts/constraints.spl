@@ -1,9 +1,0 @@
-@{SPL/1}
-
-$>
-enforce 'Use plain language suitable for a first-time developer.'
-forbid 'Mention implementation details or internal reasoning.'
-out{len=75, sch='string'} 'Explain what a variable is in JavaScript.'
-<$
-
-The response should be encouraging and self-contained.

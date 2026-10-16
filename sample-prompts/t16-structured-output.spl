@@ -1,0 +1,5 @@
+@{SPL/1}
+
+$>
+out{sch='object'} 'An object with the key title (a string) and the key tags (an array of exactly 3 strings).'
+<$

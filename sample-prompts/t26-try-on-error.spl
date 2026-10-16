@@ -1,0 +1,9 @@
+@{SPL/1}
+
+$>
+try:
+    $c = read{path='does/not/exist.txt'}
+on_error:
+    let $c = 'fallback'
+out 'Repeat exactly: $c'
+<$

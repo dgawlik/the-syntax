@@ -1,0 +1,7 @@
+@{SPL/1}
+
+$>
+let $retries = 5
+assert $retries < 3 -> 'Too many retries'
+out 'Should not appear'
+<$

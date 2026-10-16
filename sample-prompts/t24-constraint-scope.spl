@@ -1,0 +1,6 @@
+@{SPL/1}
+
+$>
+enforce{scope='message'} 'Write in ALL CAPS'
+out 'Say hello to the team'
+<$

@@ -1,0 +1,6 @@
+@{SPL/1}
+
+$>
+let $user = 'Alice'
+out{len='one sentence'} 'Greet $user'
+<$

@@ -1,0 +1,7 @@
+@{SPL/1}
+
+$>
+out 'Repeat exactly: HEADER'
+let $age = elicit{sch='number'} 'How old are you?'
+out 'Repeat exactly: next year ${$age + 1}'
+<$

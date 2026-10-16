@@ -1,16 +1,16 @@
 {
-  "name": "spl-language-support",
-  "displayName": "SPL Language Support",
-  "description": "Syntax highlighting and editing support for Semantic Prompt Language.",
-  "version": "0.1.1",
+  "name": "spl-language",
+  "displayName": "SPL - Semantic Prompt Language",
+  "description": "Syntax highlighting for Semantic Prompt Language (SPL) in .spl files and ```spl blocks in Markdown.",
+  "version": "0.1.0",
   "publisher": "dgawlik",
-  "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/dgawlik/the-syntax.git"
+    "url": "https://github.com/dgawlik/the-syntax.git",
+    "directory": "vscode"
   },
   "engines": {
-    "vscode": "^1.85.0"
+    "vscode": "^1.70.0"
   },
   "categories": [
     "Programming Languages"
@@ -18,42 +18,50 @@
   "keywords": [
     "spl",
     "semantic prompt language",
-    "prompt"
+    "prompt",
+    "llm",
+    "syntax"
   ],
   "contributes": {
     "languages": [
       {
-        "id": "semantic-prompt-language",
+        "id": "spl",
         "aliases": [
+          "SPL",
           "Semantic Prompt Language",
-          "SPL"
+          "spl"
         ],
         "extensions": [
           ".spl"
         ],
-        "firstLine": "^@\\{SPL/1\\}\\s*$",
         "configuration": "./language-configuration.json"
       }
     ],
     "grammars": [
       {
-        "language": "semantic-prompt-language",
-        "scopeName": "source.semantic-prompt-language",
+        "language": "spl",
+        "scopeName": "source.spl",
         "path": "./syntaxes/spl.tmLanguage.json"
       },
       {
-        "scopeName": "markdown.spl.fenced",
-        "path": "./syntaxes/markdown-spl.tmLanguage.json",
+        "scopeName": "markdown.spl.codeblock",
+        "path": "./syntaxes/spl-markdown-injection.tmLanguage.json",
         "injectTo": [
           "text.html.markdown"
         ],
         "embeddedLanguages": {
-          "meta.embedded.block.semantic-prompt-language": "semantic-prompt-language"
+          "meta.embedded.block.spl": "spl"
         }
       }
     ]
   },
   "scripts": {
-    "package": "npx --yes @vscode/vsce package"
+    "test": "node test/run.js",
+    "package": "vsce package --skip-license"
+  },
+  "devDependencies": {
+    "@vscode/vsce": "^3.0.0",
+    "vscode-oniguruma": "^2.0.1",
+    "vscode-textmate": "^9.0.0"
   }
 }

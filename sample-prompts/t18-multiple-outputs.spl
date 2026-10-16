@@ -1,0 +1,6 @@
+@{SPL/1}
+
+$>
+out 'Write only the word ALPHA'
+out 'Write only the word BETA'
+<$

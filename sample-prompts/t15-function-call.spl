@@ -1,0 +1,8 @@
+@{SPL/1}
+
+$>
+def twice($s):
+    return $s + $s
+let $r = twice('ab')
+out 'Repeat exactly: $r'
+<$

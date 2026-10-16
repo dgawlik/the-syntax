@@ -1,0 +1,6 @@
+@{SPL/1}
+
+$>
+think{level='low'} 'Is 17 a prime number?'
+out 'Answer with only yes or no'
+<$

@@ -1,43 +1,19 @@
-# SPL Language Support for VS Code
+# SPL – Semantic Prompt Language
 
-This extension adds syntax coloring and basic editing support for Semantic Prompt Language (`.spl`) files.
+Syntax highlighting for [SPL](https://github.com/dgawlik/the-syntax/blob/main/agent/spl.agent.md) in VS Code:
 
-## Included support
+- `.spl` files
+- ` ```spl ` fenced code blocks in Markdown (including `~~~spl` and longer fences)
 
-- SPL protocol headers: `@{SPL/1}`
-- Pseudocode block markers: `$>`
-- Commands, control flow, logical operators, and ranges
-- Session variables and interpolation
-- Strings, booleans, numbers, comments, and JSON-like punctuation
-- Auto-closing pairs, line comments, and indentation after control-flow statements
-- Fenced blocks labeled `spl` in Markdown files
+Highlighted: the `@{SPL/1}` / `@{SPL/off}` marker, `$>` … `<$` blocks (multi-line and single-statement), `let`/`reset`, `out`/`elicit`/`think`/`enforce`/`forbid`/`assert`/`fail`, control flow (`if`/`else`/`while`/`for`/`try`/`on_error`/`def`/`return`/`yield`/`break`/`continue`), `$variables`, `{param=value}` parameters, tool calls, semantic conditions (`?'...'`), strings with `\$` escapes and `$x` / `${expr}` interpolation, and `#` comments. Prose outside blocks is left unstyled. Inside a Markdown ` ```spl ` fence, bare statements without `$>` are highlighted too.
 
-## Install locally
+## Build and install
 
-From this repository's root in PowerShell:
-
-```powershell
-cd .\vscode
-npm run package
-code --install-extension .\spl-language-support-0.1.1.vsix
+```
+npm install
+npm test          # grammar tests
+npm run package   # produces spl-language-<version>.vsix
+code --install-extension spl-language-0.1.0.vsix
 ```
 
-Restart VS Code if it is already open. Open any `.spl` file and verify that the language mode in the status bar reads **Semantic Prompt Language**.
-
-If the `code` command is unavailable, run `npm run package`, then open the Extensions view in VS Code, select the `...` menu, choose **Install from VSIX...**, and select `spl-language-support-0.1.1.vsix`.
-
-### Resolve another `.spl` association
-
-If another extension claims `.spl` files, explicitly associate them with this extension. Open **Preferences: Open User Settings (JSON)** and add:
-
-```json
-{
-  "files.associations": {
-    "*.spl": "semantic-prompt-language"
-  }
-}
-```
-
-## Develop without packaging
-
-Open the `vscode` folder in VS Code and press `F5`. This starts an Extension Development Host where `.spl` files use the grammar directly.
+Set `MARKDOWN_GRAMMAR` to VS Code's `markdown.tmLanguage.json` to run the tests against the real Markdown grammar.

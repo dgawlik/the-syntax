@@ -8,11 +8,11 @@
     ["(", ")"]
   ],
   "autoClosingPairs": [
-    ["{", "}"],
-    ["[", "]"],
-    ["(", ")"],
-    ["\"", "\""],
-    ["'", "'"]
+    { "open": "{", "close": "}" },
+    { "open": "[", "close": "]" },
+    { "open": "(", "close": ")" },
+    { "open": "\"", "close": "\"", "notIn": ["string", "comment"] },
+    { "open": "'", "close": "'", "notIn": ["string", "comment"] }
   ],
   "surroundingPairs": [
     ["{", "}"],
@@ -21,8 +21,15 @@
     ["\"", "\""],
     ["'", "'"]
   ],
+  "folding": {
+    "markers": {
+      "start": "^\\s*\\$>\\s*(#.*)?$",
+      "end": "^\\s*<\\$\\s*$"
+    }
+  },
   "indentationRules": {
-    "increaseIndentPattern": "^\\s*(?:if|else|while|for)\\b.*:\\s*(?:#.*)?$",
-    "decreaseIndentPattern": "^\\s*(?:else)\\b.*:\\s*(?:#.*)?$"
-  }
+    "increaseIndentPattern": "^\\s*(if|else|while|for|def|try|on_error)\\b.*:\\s*(#.*)?$",
+    "decreaseIndentPattern": "^\\s*(else|on_error)\\b.*:\\s*(#.*)?$"
+  },
+  "wordPattern": "(\\$[A-Za-z_]\\w*)|([A-Za-z_]\\w*)|(\\d+(\\.\\d+)?)"
 }

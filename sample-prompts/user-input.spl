@@ -1,7 +1,0 @@
-@{SPL/1}
-
-$>
-elicit 'What programming language and experience level should the tutorial target?'
-<$
-
-Wait for the answer before creating the tutorial.

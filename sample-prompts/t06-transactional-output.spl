@@ -1,0 +1,6 @@
+@{SPL/1}
+
+$>
+out 'Visible?'
+fail 'Stop here'
+<$

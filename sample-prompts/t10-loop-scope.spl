@@ -1,0 +1,8 @@
+@{SPL/1}
+
+$>
+for $i in 1..2:
+    let $label = 'item-$i'
+    out 'Repeat exactly: $label'
+out 'Repeat exactly: $i'
+<$
