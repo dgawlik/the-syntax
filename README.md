@@ -25,10 +25,11 @@ and share with friends.
 
 * `agent` the agent for establishing protocol
 * `vscode` syntax support for VSCode
-* `docs` site
+* `docs` documentation site (static HTML; open `docs/index.html` or serve the folder with GitHub Pages)
 * `sample-prompts` real world and validation prompts
 
 
 ## Contributing
 
 If you found a bug or want to contribute drop me message at `dominik.gawlik1@gmail.com`
+

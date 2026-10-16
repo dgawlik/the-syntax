@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Getting started – SPL</title>
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<div class="layout">
+<main>
+<h1>Getting started</h1>
+<p class="lead">Copy one file, add one marker, and start scripting.</p>
+
+<h2>1. Install the agent</h2>
+<p>The repository contains <a href="https://github.com/dgawlik/the-syntax/blob/main/agent/spl.agent.md"><code>agent/spl.agent.md</code></a>. Copy it as-is into your project's <code>.github/agents/</code> folder (a copy is already there in this repository) and select the <code>spl</code> agent in VS Code Copilot Chat.</p>
+<p>The agent's front matter configures the model and the tools SPL statements may call:</p>
+<pre><code>---
+name: spl
+description: A dense, session-scoped protocol for expressing LLM instructions, state, ...
+model: GPT-5.6 Terra (copilot)
+tools: [vscode, execute, read, edit, search, 'github/*', todo]
+---</code></pre>
+<p>Adjust <code>model</code> and <code>tools</code> to what you have available. Tool calls to tools not listed fail with <code>Tool &lt;name&gt; not available</code>.</p>
+
+<h2>2. Activate SPL</h2>
+<p>Start a message with <code>@{SPL/1}</code>. From then on the whole chat thread is in SPL mode, so later messages do not need to repeat the marker.</p>
+<pre><code class="language-spl">@{SPL/1}
+$&gt;
+let $user = 'Alice'
+out{len='one sentence'} 'Greet $user'
+&lt;$</code></pre>
+<p>The response is just the greeting – no echoed pseudocode, no marker, no preamble.</p>
+
+<h2>3. Mix prose and blocks</h2>
+<p>A message can interleave plain-language instructions with pseudocode blocks. Prose is general guidance; blocks are executed top to bottom.</p>
+<pre><code class="language-spl">@{SPL/1}
+
+Be friendly and brief.
+
+$&gt;
+let $city = 'Paris'
+out 'Name one landmark of $city in one sentence'
+&lt;$
+
+$&gt; out 'Name a food typical of $city in one sentence'</code></pre>
+<p>Variables persist, so the second block can use <code>$city</code> (and it could be sent in a later message).</p>
+
+<h2>4. Handle failures</h2>
+<p>If an <code>assert</code> fails or a statement errors, all output is discarded and the reply is a single JSON <a href="execution.html#envelope">failure envelope</a>:</p>
+<pre><code class="language-spl">@{SPL/1}
+$&gt;
+let $retries = 5
+assert $retries &lt; 3 -&gt; 'Too many retries'
+out 'Should not appear'
+&lt;$</code></pre>
+<pre><code>{
+  "spl": "1.0",
+  "status": "failure",
+  "reason": "Too many retries",
+  "statement": "assert $retries &lt; 3 -&gt; 'Too many retries'"
+}</code></pre>
+
+<h2>5. Leave SPL mode</h2>
+<p>Send a message starting with <code>@{SPL/off}</code>. All variables, functions and constraints are discarded and later messages are plain natural language. A later <code>@{SPL/1}</code> starts a fresh session.</p>
+
+<h2>6. Editor support</h2>
+<p>Install the VS Code extension for syntax highlighting of <code>.spl</code> files and <code>```spl</code> fences – see <a href="tooling.html">Tooling &amp; testing</a>.</p>
+
+<h2>Block syntax at a glance</h2>
+<table>
+  <tr><th>Form</th><th>Example</th></tr>
+  <tr><td>Single statement</td><td><code>$&gt; out 'Hello'</code> – ends with the statement (and its indented body)</td></tr>
+  <tr><td>Multi-line block</td><td><code>$&gt;</code> alone on a line, statements, then <code>&lt;$</code> (if omitted, the block runs to the end of the message)</td></tr>
+  <tr><td>Comments</td><td><code># to end of line</code> (outside strings)</td></tr>
+  <tr><td>Strings</td><td><code>'single'</code> or <code>"double"</code>, escapes <code>\' \" \\ \$</code></td></tr>
+</table>
+</main>
+</div>
+<script src="assets/site.js"></script>
+</body>
+</html>

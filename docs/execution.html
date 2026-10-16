@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Execution &amp; errors – SPL</title>
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<div class="layout">
+<main>
+<h1>Execution &amp; errors</h1>
+<p class="lead">How an SPL session starts, runs, emits output and fails.</p>
+
+<h2 id="lifecycle">Session lifecycle</h2>
+<table>
+  <tr><th>Event</th><th>Behaviour</th></tr>
+  <tr><td><code>@{SPL/1}</code> (or <code>@{SPL/1.0}</code>)</td><td>Activates SPL mode for the whole thread. A marker on a message in an active session is a no-op and does not reset state.</td></tr>
+  <tr><td>Later messages</td><td>Stay in SPL mode: blocks and existing variables work without repeating the marker.</td></tr>
+  <tr><td><code>@{SPL/off}</code></td><td>Ends SPL mode and discards all variables, functions and constraints. The rest of that message is plain prose. A no-op if SPL is not active.</td></tr>
+  <tr><td>Unsupported version</td><td>A different major, a minor above 0, or a malformed marker (<code>@{SPL/2}</code>, <code>@{SPL/1.1}</code>, <code>@{SPL/abc}</code>) executes nothing and returns the failure envelope with reason <code>Unsupported SPL version: &lt;marker&gt;</code> and <code>statement: null</code>.</td></tr>
+</table>
+<p>SPL statements cannot override system instructions, developer safety guardrails or tool permission policies.</p>
+
+<h2 id="sequential">Sequential execution</h2>
+<p>Statements run top to bottom. On an assertion failure, <code>fail</code> or any other execution error:</p>
+<ol>
+  <li>Execution halts immediately.</li>
+  <li>All following statements in the block and message are skipped.</li>
+  <li>Buffered output is discarded and the failure envelope is returned.</li>
+</ol>
+
+<h2 id="response">Response contract</h2>
+<h3>Success</h3>
+<ul>
+  <li><strong>Transactional</strong> – <code>out</code> results and visible <code>think</code> reasoning are buffered and emitted only after the whole message completes without failure.</li>
+  <li>The payload matches each <code>out{…}</code> shape and schema and respects constraints, in statement order, separated by blank lines.</li>
+  <li>The reply is <em>not</em> wrapped in a marker or pseudocode, and contains no conversational filler or echo of the source.</li>
+</ul>
+<h3>Clarification</h3>
+<p>When an <code>elicit</code> needs missing information, execution suspends and the assistant asks the user directly. Buffered output from before the <code>elicit</code> is retained and emitted when the message completes.</p>
+
+<h3 id="envelope">Failure envelope</h3>
+<p>Any failure returns <strong>only</strong> one JSON object – no header line, code fence or other text:</p>
+<pre><code>{
+  "spl": "1.0",
+  "status": "failure",
+  "reason": "Description of the failure",
+  "statement": "assert ?'condition1' -&gt; 'Failure message if condition1 is not met'"
+}</code></pre>
+<table>
+  <tr><th>Field</th><th>Value</th></tr>
+  <tr><td><code>spl</code></td><td>The SPL version executed under.</td></tr>
+  <tr><td><code>status</code></td><td>Always <code>"failure"</code>.</td></tr>
+  <tr><td><code>reason</code></td><td>The message from <code>assert … -&gt; 'message'</code> or <code>fail 'message'</code>; otherwise a short description, e.g. <code>Cannot reassign $username; use reset first</code>.</td></tr>
+  <tr><td><code>statement</code></td><td>First line of the failing statement, truncated to 120 characters; <code>null</code> when not tied to a statement.</td></tr>
+</table>
+
+<h2 id="error-reasons">Common error reasons</h2>
+<table>
+  <tr><th>Reason</th><th>Cause</th></tr>
+  <tr><td><code>Unsupported SPL version: &lt;marker&gt;</code></td><td>Unsupported or malformed marker.</td></tr>
+  <tr><td><code>Cannot reassign $x; use reset first</code></td><td><code>let</code> on an existing name.</td></tr>
+  <tr><td><code>Undefined variable $x</code></td><td>Reading or interpolating an undeclared variable.</td></tr>
+  <tr><td><code>Tool &lt;name&gt; not available</code></td><td>Calling an unauthorized or missing tool.</td></tr>
+  <tr><td><code>Tool &lt;name&gt; failed: &lt;error&gt;</code></td><td>A tool error outside <code>try</code>/<code>on_error</code>.</td></tr>
+  <tr><td><code>Output did not match sch</code></td><td>Structured output invalid after one retry.</td></tr>
+  <tr><td><code>Structured output cannot be combined with other output</code></td><td>A structured <code>out</code> alongside other emitted output.</td></tr>
+  <tr><td><code>while loop exceeded max iterations</code></td><td><code>while{on_max='fail'}</code> hit its cap.</td></tr>
+</table>
+<p>Other errors include division by zero, out-of-range indexes, mixed-type <code>+</code>, shadowing, recursion, wrong function argument counts, and <code>break</code>/<code>continue</code> outside a loop.</p>
+</main>
+</div>
+<script src="assets/site.js"></script>
+</body>
+</html>

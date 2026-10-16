@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Language reference – SPL</title>
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<div class="layout">
+<main>
+<h1>Language reference</h1>
+<p class="lead">Everything in SPL 1.0: values, variables, conditions, constraints, output, control flow, functions and tool calls.</p>
+
+<h2 id="types">Data types &amp; expressions</h2>
+<p>SPL has the JSON types: string, number, boolean, array, object and <code>null</code>.</p>
+<pre><code class="language-spl">let $name = 'Alice'                         # string
+let $age = 30                               # number
+let $is_student = true                      # boolean
+let $hobbies = ['reading', 'coding']        # array
+let $address = {'city': 'Wonderland'}       # object</code></pre>
+<p>Expressions may be used wherever a value is expected (<code>let</code>, tool parameters, conditions, <code>yield</code>, <code>return</code>).</p>
+<table>
+  <tr><th>Operation</th><th>Notes</th></tr>
+  <tr><td>Arithmetic <code>+ - * /</code>, parentheses</td><td>On numbers. Division by zero is an execution error.</td></tr>
+  <tr><td>Concatenation <code>+</code></td><td>Two strings or two arrays. Mixing types is an error.</td></tr>
+  <tr><td>Indexing <code>$list[0]</code></td><td>Zero-based. Out of range is an error.</td></tr>
+  <tr><td>Field access <code>$obj.key</code>, <code>$obj['key']</code></td><td>Missing key gives <code>null</code>; accessing a field of a non-object is an error.</td></tr>
+  <tr><td><code>len($x)</code></td><td>Characters of a string, items of an array, keys of an object.</td></tr>
+</table>
+
+<h3>Interpolation</h3>
+<p>Both quote styles support interpolation:</p>
+<table>
+  <tr><th>Syntax</th><th>Meaning</th></tr>
+  <tr><td><code>$name</code></td><td>Value of the variable. Strings as-is; numbers, booleans, <code>null</code>, arrays and objects as JSON.</td></tr>
+  <tr><td><code>${name}</code></td><td>Delimits the name when text follows: <code>'${unit}s'</code>.</td></tr>
+  <tr><td><code>${expression}</code></td><td>Full expression: <code>${len($items)}</code>, <code>${$users[0].name}</code>.</td></tr>
+  <tr><td><code>\$</code></td><td>Literal dollar sign.</td></tr>
+</table>
+<p>Interpolating an undefined variable is an execution error.</p>
+
+<h2 id="variables">Variables &amp; scope</h2>
+<ul>
+  <li><code>let $x = value</code> declares a variable. The value can be a literal, expression, tool call, <code>out</code>, <code>elicit</code>, function call or <code>for</code> expression.</li>
+  <li>Variables <strong>cannot be reassigned</strong>: <code>let</code> on an existing name is an error (<code>Cannot reassign $x; use reset first</code>).</li>
+  <li><code>reset $x</code> removes a session variable (no-op if undefined). <code>reset *</code> removes all session variables. It cannot remove body-scoped variables, functions or constraints.</li>
+</ul>
+<h3>Scope</h3>
+<ul>
+  <li><strong>Session scope</strong> – a top-level <code>let</code> (or <code>$x = tool{…}</code>) outside any <code>if</code>/<code>else</code>, <code>while</code>, <code>for</code> or function body persists for the whole conversation.</li>
+  <li><strong>Body scope</strong> – variables declared inside a branch, loop or function body live until that body ends (fresh per loop iteration).</li>
+  <li><strong>No shadowing</strong> – redeclaring any visible name is an error. Reading an undefined variable is an error (<code>Undefined variable $x</code>).</li>
+  <li><code>try</code> / <code>on_error</code> bodies are <em>not</em> scopes.</li>
+</ul>
+<pre><code class="language-spl">let $total = 3                  # session scope
+for $i in 0..2:                 # $i is loop-local
+    let $label = 'Item $i'      # recreated each iteration
+    out '$label of $total'</code></pre>
+
+<h2 id="conditions">Conditions</h2>
+<p>Conditions in <code>assert</code>, <code>if</code> and <code>while</code> are either:</p>
+<ol>
+  <li><strong>Semantic</strong> – <code>?'…'</code>, a natural-language expression judged by the model (<code>?'requirements are met'</code>). A quoted string without <code>?</code> is always a string literal.</li>
+  <li><strong>Deterministic</strong> – comparisons <code>== != &lt; &lt;= &gt; &gt;=</code>, membership <code>$item in $collection</code>, null checks <code>$var != null</code>.</li>
+</ol>
+<p>Combine with <code>&amp;</code> (AND), <code>|</code> (OR), <code>!</code> (NOT) and parentheses. Precedence: <code>!</code> &gt; <code>&amp;</code> &gt; <code>|</code>.</p>
+<pre><code class="language-spl">assert ?'inputs are valid' &amp; $retries &lt; 3 -&gt; 'Exceeded maximum retries or inputs invalid'
+assert !?'user is blocked' -&gt; 'Operation forbidden for blocked users'
+if ($env == 'prod' &amp; !?'emergency override'):
+    enforce 'Require two-person review'</code></pre>
+
+<h2 id="constraints">Constraints &amp; failures</h2>
+<p><code>enforce</code> is a hard requirement the response must satisfy; <code>forbid</code> is something that must never happen. Both accept a <code>scope</code>:</p>
+<table>
+  <tr><th>Scope</th><th>Active</th></tr>
+  <tr><td><code>'session'</code> (default)</td><td>From the statement until the session ends.</td></tr>
+  <tr><td><code>'message'</code></td><td>Until the end of the current message.</td></tr>
+  <tr><td><code>'block'</code></td><td>Until the end of the enclosing body (block, branch or loop iteration).</td></tr>
+</table>
+<pre><code class="language-spl">enforce 'This must be satisfied'
+forbid{scope='message'} 'This must not be done'</code></pre>
+<p>A constraint is only registered when its statement executes – one inside an untaken branch is never active. If a constraint cannot be satisfied, execution fails and the <code>reason</code> names it.</p>
+<ul>
+  <li><code>assert &lt;cond&gt; -&gt; 'message'</code> – fails with <code>message</code> if the condition is not met.</li>
+  <li><code>fail 'message'</code> – fails unconditionally.</li>
+</ul>
+
+<h2 id="output">Output &amp; interaction</h2>
+<h3><code>out</code></h3>
+<p><code>out{len=…, fmt=…, sch=…, synth=…} 'prompt'</code> generates a response.</p>
+<table>
+  <tr><th>Param</th><th>Meaning</th></tr>
+  <tr><td><code>len</code></td><td>Free-text length guidance (<code>'one sentence'</code>, <code>'under 5 bullets'</code>). A target, not a hard limit – use <code>enforce</code> for hard limits.</td></tr>
+  <tr><td><code>fmt</code></td><td>Shape of human-readable output: <code>text</code> (default), <code>markdown</code>, <code>sentence</code>, <code>paragraph</code>, <code>bullet_list</code>, <code>code</code>, <code>table</code>.</td></tr>
+  <tr><td><code>sch</code></td><td>Data type: <code>string</code>, <code>number</code>, <code>boolean</code>, <code>array</code>, <code>object</code>, <code>json</code>, or a JSON schema.</td></tr>
+  <tr><td><code>synth</code></td><td><code>true</code> allows merging with neighbouring <code>synth</code> outputs into one passage. Default <code>false</code>.</td></tr>
+</table>
+<pre><code class="language-spl">out{len='about 100 words', fmt='text'} 'Write a joke about programming'
+out{sch='array'} 'Generate names of 3 fruits'</code></pre>
+<p><strong>Structured output.</strong> When <code>sch</code> is anything other than <code>'string'</code>, the output must be the raw value only – valid JSON (or a bare number/boolean), no code fences or commentary. On a schema mismatch the model retries once, then fails with <code>Output did not match sch</code>. A structured output must be the only emitted output of its message (<code>Structured output cannot be combined with other output</code>).</p>
+<p><strong>Multiple outputs</strong> are emitted in statement order separated by blank lines, each verbatim unless <code>synth=true</code>.</p>
+<p><strong>Capture.</strong> <code>let $draft = out{sch='string'} 'Draft a title'</code> binds the result and does <em>not</em> add it to the response.</p>
+
+<h3><code>elicit</code></h3>
+<p>Asks the user a question and suspends execution until they answer. Optional <code>sch</code> validates the answer (asked again once on mismatch, then fails). While suspended only the question is emitted.</p>
+<pre><code class="language-spl">let $age = elicit{sch='number'} 'Please provide your age'</code></pre>
+
+<h3><code>think</code></h3>
+<p><code>think{level=…, show=…} 'prompt'</code> performs deliberate reasoning. <code>level</code> is <code>low</code> (a few sentences), <code>medium</code> or <code>high</code> (thorough). By default (<code>show=true</code>) the reasoning is emitted as a blockquote introduced by <strong>Thinking:</strong>; with <code>show=false</code> it stays internal. It is not emitted when the message has a structured <code>out</code>.</p>
+<pre><code class="language-spl">think{level='high'} 'Consider the implications of the current state'</code></pre>
+
+<h2 id="control-flow">Control flow</h2>
+<h3><code>if</code> / <code>else</code></h3>
+<pre><code class="language-spl">if $status == 'error' | ?'build is red':
+    think{level='high'} 'Find root cause'
+    out 'Summarize failure'
+else:
+    out 'Write success confirmation'</code></pre>
+
+<h3><code>while</code></h3>
+<p>Loops while the condition holds, with a default cap of 5 iterations. <code>max</code> overrides the cap; <code>on_max</code> is <code>'stop'</code> (default, exit and continue) or <code>'fail'</code> (error <code>while loop exceeded max iterations</code>).</p>
+<pre><code class="language-spl">while{max=3, on_max='fail'} ?'tests are failing':
+    think 'Evaluate how to fix broken tests'</code></pre>
+
+<h3><code>for</code></h3>
+<p>Iterates over a range (inclusive on both ends; a start greater than the end is empty) or an array. <code>break</code> exits the innermost loop, <code>continue</code> skips to the next iteration; both are errors outside a loop.</p>
+<pre><code class="language-spl">for $i in 0..4:
+    out "Iteration $i"
+for $item in $items:
+    out "Process $item"</code></pre>
+<p>As an expression, <code>for</code> builds an array with <code>yield</code> (a loop with no <code>yield</code> yields <code>[]</code>):</p>
+<pre><code class="language-spl">let $squares = for $i in 1..3:
+    yield $i * $i          # [1, 4, 9]</code></pre>
+
+<h2 id="functions">Functions</h2>
+<pre><code class="language-spl">def greet($who, $punct):
+    out 'Hello $who$punct'
+    return len($who)
+
+greet('Alice', '!')
+let $n = greet('Bob', '?')</code></pre>
+<ul>
+  <li>Parameters are local and follow the no-shadowing rule; the body can read session variables.</li>
+  <li><code>return &lt;expr&gt;</code> yields a value; without it the result is <code>null</code>.</li>
+  <li>Function names are defined for the rest of the session and cannot be redefined or reset.</li>
+  <li>Recursion (direct or indirect), wrong argument counts and undefined functions are errors.</li>
+</ul>
+
+<h2 id="tools">Tool invocations</h2>
+<p>Tools available in the environment are called directly: <code>[$variable =] tool_name{param=value, …} ['guidance']</code>. Typical tools are <code>read</code>, <code>search</code>, <code>execute</code>, <code>edit</code> and <code>vscode</code>; availability is set by the agent's <code>tools</code> list. Calling an unavailable tool is an error (<code>Tool &lt;name&gt; not available</code>).</p>
+<pre><code class="language-spl">$matches = search{query='auth_token'} 'Locate authentication token references'
+$content = read{path='src/auth.ts'}
+execute{command='npm test'} 'Run the full test suite'</code></pre>
+
+<h3>Tool errors</h3>
+<p>A failing tool call is an execution error (<code>Tool &lt;name&gt; failed: &lt;error&gt;</code>) unless wrapped in <code>try</code>/<code>on_error</code>. <code>$error</code> holds the message and is visible only inside <code>on_error</code>. Only tool failures are caught – never <code>assert</code>, <code>fail</code> or constraint violations. A variable declared in <code>try</code> after the failing call is undefined.</p>
+<pre><code class="language-spl">try:
+    $content = read{path='config.json'}
+on_error:
+    out 'Config missing: $error'
+    let $content = '{}'</code></pre>
+
+<h2 id="keywords">Statement summary</h2>
+<table>
+  <tr><th>Statement</th><th>Purpose</th></tr>
+  <tr><td><code>let</code>, <code>reset</code></td><td>Declare / remove variables</td></tr>
+  <tr><td><code>enforce</code>, <code>forbid</code></td><td>Hard constraints</td></tr>
+  <tr><td><code>assert</code>, <code>fail</code></td><td>Abort with a reason</td></tr>
+  <tr><td><code>out</code>, <code>elicit</code>, <code>think</code></td><td>Output, ask the user, reason</td></tr>
+  <tr><td><code>if</code>, <code>while</code>, <code>for</code>, <code>break</code>, <code>continue</code></td><td>Control flow</td></tr>
+  <tr><td><code>def</code>, <code>return</code>, <code>yield</code></td><td>Functions and array building</td></tr>
+  <tr><td><code>try</code> / <code>on_error</code></td><td>Tool-failure handling</td></tr>
+</table>
+</main>
+</div>
+<script src="assets/site.js"></script>
+</body>
+</html>

@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SPL – Semantic Prompt Language</title>
+<meta name="description" content="SPL is a lightweight pseudo-Python protocol for scripting LLM responses.">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<div class="layout">
+<main>
+<h1>Semantic Prompt Language</h1>
+<p class="lead">A lightweight protocol that lets you "script" an LLM's response with pseudo-Python syntax that is easy to read, share and version.</p>
+
+<pre><code class="language-spl">@{SPL/1}
+
+Summarize the project README for a new contributor.
+
+$&gt;
+let $topic = 'the README'
+try:
+    $readme = read{path='README.md'}
+on_error:
+    fail 'README.md could not be read'
+assert $readme != null -&gt; 'README is empty'
+out{len='under 5 bullets', fmt='bullet_list'} 'Summarize $topic'
+&lt;$
+</code></pre>
+
+<h2>What it is</h2>
+<p>SPL combines Python-like pseudocode with natural language. Prose outside <code>$&gt; … &lt;$</code> blocks is ordinary instruction; statements inside blocks declare variables, constraints, control flow, tool calls and output formats. Any capable LLM already understands this style, so the protocol is activated by a single marker, <code>@{SPL/1}</code>, and the agent file in this repository.</p>
+
+<h2>What it is for</h2>
+<p>Long-winded prose prompts are hard to read, review and reuse. SPL establishes a common vocabulary and syntax so that prompts can be:</p>
+<ul>
+  <li><strong>Scannable</strong> – constraints (<code>enforce</code>/<code>forbid</code>), output shape (<code>out{…}</code>) and state (<code>let $x</code>) are conspicuous.</li>
+  <li><strong>Reproducible</strong> – write once, get similar results every time, with less noise than prose.</li>
+  <li><strong>Shareable</strong> – check prompts into Git, track them in a team repository and pass them around as <code>.spl</code> files.</li>
+</ul>
+
+<div class="callout warn">
+  <p><strong>SPL is a prompt notation, not a runtime.</strong> There is no parser or evaluator behind it: <code>if</code>, <code>while</code>, <code>assert</code> and friends describe behaviour the model is asked to follow. Results are as deterministic as the model is. See <a href="execution.html">Execution &amp; errors</a> and <a href="tooling.html">Tooling &amp; testing</a> for how the behaviour is specified and verified.</p>
+</div>
+
+<h2>Where to go next</h2>
+<div class="cards">
+  <a class="card" href="getting-started.html"><h3>Getting started</h3><p>Install the agent and run your first SPL message.</p></a>
+  <a class="card" href="language.html"><h3>Language reference</h3><p>Types, variables, conditions, output, control flow, functions and tools.</p></a>
+  <a class="card" href="execution.html"><h3>Execution &amp; errors</h3><p>Session lifecycle, transactional output and the failure envelope.</p></a>
+  <a class="card" href="security.html"><h3>Trust boundaries</h3><p>Why data is never executed as code.</p></a>
+  <a class="card" href="grammar.html"><h3>Formal grammar</h3><p>The EBNF definition of SPL 1.0.</p></a>
+  <a class="card" href="examples.html"><h3>Examples</h3><p>Real-world prompts: code review, commit messages, release gates.</p></a>
+  <a class="card" href="tooling.html"><h3>Tooling &amp; testing</h3><p>VS Code highlighting and the conformance suite.</p></a>
+</div>
+
+<h2>Repository layout</h2>
+<table>
+  <tr><th>Path</th><th>Contents</th></tr>
+  <tr><td><code>agent/</code></td><td>The agent (<code>spl.agent.md</code>) that establishes the protocol, the conformance suite and fixtures.</td></tr>
+  <tr><td><code>vscode/</code></td><td>VS Code extension with syntax highlighting for <code>.spl</code> files and <code>```spl</code> fences.</td></tr>
+  <tr><td><code>sample-prompts/</code></td><td>Real-world prompts and single-message validation prompts.</td></tr>
+  <tr><td><code>docs/</code></td><td>This site.</td></tr>
+</table>
+
+<h2>Contributing</h2>
+<p>Found a bug or want to contribute? Open an issue on <a href="https://github.com/dgawlik/the-syntax">GitHub</a> or write to <code>dominik.gawlik1@gmail.com</code>.</p>
+</main>
+</div>
+<script src="assets/site.js"></script>
+</body>
+</html>

@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Examples – SPL</title>
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<div class="layout">
+<main>
+<h1>Examples</h1>
+<p class="lead">Real-world prompts from <a href="https://github.com/dgawlik/the-syntax/tree/main/sample-prompts"><code>sample-prompts/</code></a>. Copy any of them into a chat with the <code>spl</code> agent.</p>
+
+<h2>PR code review</h2>
+<p>Elicits a path, reads the file, loops over review aspects with <code>for</code> as an expression, then summarizes. Source: <code>r01-pr-code-review.spl</code>.</p>
+<pre><code class="language-spl">@{SPL/1}
+
+Review a source file the way a senior engineer would in a pull request.
+
+$&gt;
+let $file = elicit{sch='string'} 'Which file should I review? (relative path)'
+try:
+    $code = read{path=$file}
+on_error:
+    fail 'Cannot review: $file could not be read'
+assert len($code) &gt; 0 -&gt; 'File is empty, nothing to review'
+
+forbid 'Do not rewrite the whole file; only quote the lines that matter'
+
+let $checks = ['correctness and edge cases', 'error handling', 'security', 'readability', 'test coverage']
+let $findings = for $c in $checks:
+    let $f = out{len='one or two sentences', fmt='sentence'} 'Review the code below for $c. If there is nothing to report, say "No issues". Code: $code'
+    yield $f
+
+think{level='low'} 'Rank the findings by severity and drop the ones that say "No issues"'
+out{len='under 8 bullets', fmt='bullet_list'} 'Summarize the review of $file from these findings, most severe first: $findings'
+&lt;$</code></pre>
+
+<h2>Commit message</h2>
+<p>Hard constraints, a tool call, a semantic condition combined with a deterministic one. Source: <code>r02-commit-message.spl</code>.</p>
+<pre><code class="language-spl">@{SPL/1}
+
+Write a Conventional Commits message for what is currently staged.
+
+$&gt;
+enforce 'Subject line is at most 72 characters, imperative mood, no trailing period'
+enforce 'Subject starts with one of: feat, fix, docs, refactor, test, chore'
+
+$diff = execute{command='git --no-pager diff --staged'} 'Get the staged changes'
+assert len($diff) &gt; 0 -&gt; 'Nothing is staged'
+
+let $subject = out{len='one line', fmt='sentence'} 'Write the commit subject for this diff: $diff'
+if len($diff) &gt; 2000 | ?'the change touches several unrelated concerns':
+    let $body = out{len='under 5 bullets', fmt='bullet_list'} 'Explain what changed and why, grouped by concern, for this diff: $diff'
+    out 'Subject: $subject Body: $body'
+else:
+    out 'Subject: $subject'
+&lt;$</code></pre>
+
+<h2>Changelog as JSON</h2>
+<p>Structured output with a JSON schema. Because it is structured, it is the only output of the message. Source: <code>r03-changelog-json.spl</code>.</p>
+<pre><code class="language-spl">@{SPL/1}
+
+Turn recent git history into machine-readable release notes.
+
+$&gt;
+let $range = elicit{sch='string'} 'Which git range should the changelog cover? (e.g. v1.2.0..HEAD)'
+$log = execute{command='git --no-pager log --oneline $range'} 'List commits in the range'
+assert len($log) &gt; 0 -&gt; 'No commits found in range $range'
+
+out{sch={'type': 'object', 'required': ['range', 'features', 'fixes', 'other'], 'properties': {'range': {'type': 'string'}, 'features': {'type': 'array', 'items': {'type': 'string'}}, 'fixes': {'type': 'array', 'items': {'type': 'string'}}, 'other': {'type': 'array', 'items': {'type': 'string'}}}}} 'Classify each commit below into features, fixes or other, rewriting each as a user-facing sentence. Use "$range" as the range value. Commits: $log'
+&lt;$</code></pre>
+
+<h2>Release gate</h2>
+<p>Hard gates abort, soft gates warn. Combines <code>elicit</code>, membership tests, conditional constraints, <code>try</code>/<code>on_error</code> and negated semantic assertions. Source: <code>r08-release-gate.spl</code>.</p>
+<pre><code class="language-spl">@{SPL/1}
+
+Decide whether a release may ship. Hard gates abort; soft gates produce warnings.
+
+$&gt;
+let $version = elicit{sch='string'} 'Which version are you releasing?'
+let $env = elicit{sch='string'} 'Target environment (staging or prod)?'
+assert $env in ['staging', 'prod'] -&gt; 'Unknown environment: $env'
+
+if $env == 'prod':
+    enforce 'Require a second reviewer sign-off before the release proceeds'
+    forbid 'Do not recommend skipping the staging soak period'
+
+try:
+    $changelog = read{path='CHANGELOG.md'}
+on_error:
+    fail 'CHANGELOG.md is missing; cannot release $version'
+
+execute{command='npm test --silent'} 'Run the full test suite'
+assert !?'the test output contains failures' -&gt; 'Tests are failing; release blocked'
+assert ?'the changelog has an entry for version $version' -&gt; 'CHANGELOG.md has no entry for the requested version'
+
+let $warnings = out{sch='array'} 'List up to 3 risks from the changelog that deserve a manual check before shipping, as a JSON array of strings (empty if none). Changelog: $changelog'
+
+if len($warnings) == 0:
+    out 'Release $version is clear to ship to $env.'
+else:
+    out{fmt='bullet_list'} 'Release $version may ship to $env after these manual checks: $warnings'
+&lt;$</code></pre>
+
+<h2>All sample prompts</h2>
+<h3>Real-world</h3>
+<table>
+  <tr><th>File</th><th>Scenario</th></tr>
+  <tr><td><code>r01-pr-code-review.spl</code></td><td>Senior-style review of a file</td></tr>
+  <tr><td><code>r02-commit-message.spl</code></td><td>Conventional Commits message from staged changes</td></tr>
+  <tr><td><code>r03-changelog-json.spl</code></td><td>Machine-readable release notes</td></tr>
+  <tr><td><code>r04-bug-triage.spl</code></td><td>Triage a bug report and decide who handles it</td></tr>
+  <tr><td><code>r05-fix-failing-tests.spl</code></td><td>Bounded test-fix loop that never touches the tests</td></tr>
+  <tr><td><code>r06-dependency-audit.spl</code></td><td>Audit Node.js dependencies and flag the risky ones</td></tr>
+  <tr><td><code>r07-incident-postmortem.spl</code></td><td>Guided blameless postmortem</td></tr>
+  <tr><td><code>r08-release-gate.spl</code></td><td>Release go/no-go gate</td></tr>
+  <tr><td><code>r09-meeting-action-items.spl</code></td><td>Extract action items for a task tracker</td></tr>
+  <tr><td><code>r10-onboarding-guide.spl</code></td><td>New-contributor guide from project docs</td></tr>
+</table>
+<h3>Validation</h3>
+<p>The <code>validation/</code> folder holds single-message versions of the <a href="tooling.html#conformance">conformance cases</a> (<code>t01-greeting.spl</code>, <code>t05-assertion-failure.spl</code>, <code>t14-for-yield.spl</code>, <code>t27-injection-tool-output.spl</code>, …), named after the case ID.</p>
+</main>
+</div>
+<script src="assets/site.js"></script>
+</body>
+</html>

@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tooling &amp; testing – SPL</title>
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<div class="layout">
+<main>
+<h1>Tooling &amp; testing</h1>
+<p class="lead">Editor support and the behavioural conformance suite.</p>
+
+<h2 id="vscode">VS Code extension</h2>
+<p>The <a href="https://github.com/dgawlik/the-syntax/tree/main/vscode"><code>vscode/</code></a> folder contains a TextMate-grammar extension that highlights:</p>
+<ul>
+  <li><code>.spl</code> files</li>
+  <li><code>```spl</code> fenced blocks in Markdown (including <code>~~~spl</code> and longer fences)</li>
+</ul>
+<p>Highlighted: the <code>@{SPL/1}</code> / <code>@{SPL/off}</code> markers, <code>$&gt; … &lt;$</code> blocks, all statements and control-flow keywords, <code>$variables</code>, <code>{param=value}</code> parameters, tool calls, semantic conditions (<code>?'…'</code>), strings with escapes and interpolation, and <code>#</code> comments. Prose outside blocks is left unstyled; inside a Markdown <code>```spl</code> fence, bare statements without <code>$&gt;</code> are highlighted too.</p>
+
+<h3>Install</h3>
+<p>A prebuilt package is in the repository. From the <code>vscode/</code> folder:</p>
+<pre><code>code --install-extension spl-language-0.1.0.vsix</code></pre>
+<p>Or on Windows run <code>install.ps1</code>.</p>
+
+<h3>Build &amp; test</h3>
+<pre><code>npm install
+npm test          # grammar tests
+npm run package   # produces spl-language-&lt;version&gt;.vsix</code></pre>
+<p>Set the <code>MARKDOWN_GRAMMAR</code> environment variable to VS Code's <code>markdown.tmLanguage.json</code> to run the tests against the real Markdown grammar.</p>
+
+<h2 id="conformance">Conformance suite</h2>
+<p><a href="https://github.com/dgawlik/the-syntax/blob/main/agent/spl.conformance.md"><code>agent/spl.conformance.md</code></a> contains behavioural tests for the agent (SPL 1.0). Run it after every spec change to see which edits help or hurt.</p>
+
+<h3>How to run</h3>
+<ul>
+  <li>Use a <strong>fresh session</strong> for every case, on the model named in the agent front matter.</li>
+  <li>Multi-turn cases (<code>Turn 1</code>, <code>Turn 2</code>, …) run in one session, in order.</li>
+  <li>Ready-to-paste single-message versions of many cases are in <code>sample-prompts/validation/</code>, named <code>tNN-*.spl</code>.</li>
+  <li>Model output is nondeterministic: run each case 3 times. A <code>[hard]</code> check must pass 3/3; a <code>[soft]</code> check at least 2/3.</li>
+  <li>Record results in the table at the end of the file, with the spec commit hash.</li>
+</ul>
+
+<h3>Coverage</h3>
+<table>
+  <tr><th>Group</th><th>Cases</th><th>Topic</th></tr>
+  <tr><td>A. Lifecycle</td><td>T01–T04</td><td>Basic output, sticky session, unsupported version, exit and fresh state</td></tr>
+  <tr><td>B. Failures</td><td>T05–T08</td><td>Assertion failure, transactional output, semantic conditions, execution errors</td></tr>
+  <tr><td>C. Variables</td><td>T09–T10</td><td>Reset and reassignment, loop-local variables</td></tr>
+  <tr><td>D. Control flow</td><td>T11–T15</td><td>Ranges, <code>while</code> cap, <code>break</code>/<code>continue</code>, <code>for</code>+<code>yield</code>, functions</td></tr>
+  <tr><td>E. Output</td><td>T16–T22</td><td>Structured output, multiple/synthesised outputs, visible reasoning, escapes</td></tr>
+  <tr><td>F. Interaction</td><td>T23</td><td>Typed <code>elicit</code> and buffered output</td></tr>
+  <tr><td>G. Constraints</td><td>T24–T25</td><td>Constraint scope and violation</td></tr>
+  <tr><td>H. Tools</td><td>T26</td><td><code>try</code> / <code>on_error</code></td></tr>
+  <tr><td>I. Injection</td><td>T27–T28</td><td>Injection via tool output and <code>elicit</code> answers</td></tr>
+</table>
+
+<div class="callout">
+  <p>The <strong>envelope check</strong> used across cases: the entire response parses as JSON with no code fence or other text, and has <code>"spl": "1.0"</code>, <code>"status": "failure"</code>, a <code>reason</code> string and a <code>statement</code> (string or <code>null</code>).</p>
+</div>
+
+<h2>Limitations</h2>
+<p>SPL is a prompt notation. The agent file is an instruction prompt, so control flow, state and assertions are model behaviour rather than deterministic execution, and the semantics of <code>len</code>, <code>sch</code> and semantic conditions rely on model judgement. Use the conformance suite to measure how reliably a given model follows the spec.</p>
+</main>
+</div>
+<script src="assets/site.js"></script>
+</body>
+</html>

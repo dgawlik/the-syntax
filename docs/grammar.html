@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Formal grammar – SPL</title>
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<div class="layout">
+<main>
+<h1>Formal grammar</h1>
+<p class="lead">The EBNF definition of SPL 1.0. If the prose and the grammar disagree about syntax, the grammar wins; the prose is authoritative for meaning.</p>
+
+<h2>Message format</h2>
+<ul>
+  <li><strong>Single-statement block</strong> – <code>$&gt;</code> followed by a statement on the same line. It ends with that statement, including its indented body. Consecutive <code>$&gt;</code> lines are independent blocks.</li>
+  <li><strong>Multi-line block</strong> – <code>$&gt;</code> alone on its line, statements, ended by <code>&lt;$</code>. Allows blank lines, multi-line JSON and indented control flow. If <code>&lt;$</code> is omitted the block extends to the end of the message.</li>
+  <li><code>$&gt;</code> and <code>&lt;$</code> are recognized only outside quoted strings.</li>
+  <li><strong>Parameters</strong> use <code>{param=value, …}</code>; JSON object literals use quoted keys and <code>:</code>.</li>
+</ul>
+
+<h2>EBNF</h2>
+<pre><code>message     = { prose | block } ;
+block       = "$&gt;" statement                              (* single-statement *)
+            | "$&gt;" NEWLINE { statement } [ "&lt;$" ] ;       (* multi-line *)
+body        = INDENT statement { statement } DEDENT ;
+
+statement   = let | reset | constraint | assert | fail | out | elicit | think
+            | if | while | for | break | continue | def | return | yield | try
+            | tool_call | func_call ;
+
+let         = "let" VAR "=" value ;
+reset       = "reset" ( VAR | "*" ) ;
+constraint  = ( "enforce" | "forbid" ) [ params ] STRING ;
+assert      = "assert" cond "-&gt;" STRING ;
+fail        = "fail" STRING ;
+out         = "out" [ params ] STRING ;
+elicit      = "elicit" [ params ] STRING ;
+think       = "think" [ params ] STRING ;
+if          = "if" cond ":" body [ "else" ":" body ] ;
+while       = "while" [ params ] cond ":" body ;
+for         = "for" VAR "in" ( expr ".." expr | expr ) ":" body ;
+break       = "break" ;   continue = "continue" ;
+def         = "def" NAME "(" [ VAR { "," VAR } ] ")" ":" body ;
+return      = "return" expr ;   yield = "yield" expr ;
+try         = "try" ":" body "on_error" ":" body ;
+tool_call   = [ VAR "=" ] NAME params [ STRING ] ;
+func_call   = NAME "(" [ expr { "," expr } ] ")" ;
+
+value       = expr | tool_call | out | elicit | func_call | for ;
+params      = "{" NAME "=" expr { "," NAME "=" expr } "}" ;
+
+cond        = and { "|" and } ;
+and         = not { "&amp;" not } ;
+not         = "!" not | "(" cond ")" | semantic | comparison | expr ;
+semantic    = "?" STRING ;
+comparison  = expr ( "==" | "!=" | "&lt;" | "&lt;=" | "&gt;" | "&gt;=" | "in" ) expr ;
+
+expr        = term { ( "+" | "-" ) term } ;
+term        = postfix { ( "*" | "/" ) postfix } ;
+postfix     = primary { "[" expr "]" | "." NAME } ;
+primary     = literal | VAR | "len" "(" expr ")" | "(" expr ")" ;
+literal     = STRING | NUMBER | "true" | "false" | "null" | array | object ;
+array       = "[" [ expr { "," expr } ] "]" ;
+object      = "{" [ STRING ":" expr { "," STRING ":" expr } ] "}" ;
+
+VAR = "$" IDENT ;   NAME = IDENT ;   STRING = "'" ... "'" | '"' ... '"' ;</code></pre>
+
+<h2>Lexical notes</h2>
+<ul>
+  <li><strong>Quoting</strong> – strings use <code>'…'</code> or <code>"…"</code> with escapes <code>\'</code> <code>\"</code> <code>\\</code> <code>\$</code>. Unquoted tokens are keywords, variables, operators and identifiers.</li>
+  <li><strong>Comments</strong> – <code>#</code> outside a quoted string starts a comment to the end of the line.</li>
+  <li><strong>Precedence</strong> – conditions: <code>!</code> &gt; <code>&amp;</code> &gt; <code>|</code>; expressions: <code>* /</code> &gt; <code>+ -</code>.</li>
+  <li><strong>Ranges</strong> – <code>a..b</code> is inclusive on both ends.</li>
+</ul>
+</main>
+</div>
+<script src="assets/site.js"></script>
+</body>
+</html>
